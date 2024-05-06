@@ -10,6 +10,8 @@ class Client(models.Model):
     email = models.EmailField(max_length=64, unique=True, verbose_name='Адрес электронной почты')
     comment = models.CharField(max_length=128, **NULLABLE, verbose_name='Комментарий')
 
+    mailing = models.ManyToManyField('mailing.Mailing', verbose_name='Рассылка')
+
     # META CLASS
     class Meta:
         verbose_name = 'Клиент'
@@ -22,10 +24,13 @@ class Client(models.Model):
 
 class MailingStat(models.Model):
     # DATABASE FIELDS
-    name = models.CharField(max_length=128, verbose_name='Название статистики рассылки')
+    name = models.CharField(max_length=128, **NULLABLE, verbose_name='Название статистики рассылки')
     attempt_datetime = models.DateTimeField(verbose_name='Дата и время последней попытки')
     status_attempt = models.BooleanField(default=False, verbose_name='Статус попытки')
-    response = models.CharField(max_length=128, verbose_name='Ответ почтового сервера')
+    response = models.CharField(max_length=128, **NULLABLE, verbose_name='Ответ почтового сервера')
+
+    mailing = models.ForeignKey('mailing.Mailing', on_delete=models.CASCADE, default=False,
+                                verbose_name='Отчет попытки рассылки')
 
     # META CLASS
     class Meta:
