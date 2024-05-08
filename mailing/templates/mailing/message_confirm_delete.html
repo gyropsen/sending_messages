@@ -1,0 +1,22 @@
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+<div class="text-center">
+    <div class="col">
+        <div class="card mb-4 rounded-3 shadow-sm">
+            <div class="card-header py-3">
+                <h4 class="my-0 fw-normal">Удаление сообщения: {{ object.title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <p>Действительно хотите удалить сообщение?</p>
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="w-10 btn btn-lg btn-danger">Удалить</button>
+                    <a class="w-10 btn btn-lg btn-warning" href="{% url 'mailing:message_list' %}">Отменить</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

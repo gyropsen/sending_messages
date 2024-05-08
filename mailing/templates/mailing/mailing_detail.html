@@ -1,0 +1,64 @@
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+<div class="row row-cols-1 row-cols-md-3 mb-2 text-center">
+    <div class="col">
+        <div class="card mb-4 rounded-3 shadow-sm">
+            <div class="card-header py-3">
+                <h4 class="my-0 fw-normal">Параметры рассылки</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li>Название рассылки: {{object.name}}</li>
+                    <li>Дата создания: {{object.datetime_created}}</li>
+                    <li>Дата старта: {{object.datetime_start}}</li>
+                    <li>Дата окончания: {{object.datetime_stop}}</li>
+                    <li>Периодичность: {{object.periodicity}}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card mb-4 rounded-3 shadow-sm">
+            <div class="card-header py-3">
+                <h4 class="my-0 fw-normal">Сообщение</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mt-3 mb-4">
+                    {% if message %}
+                    <li>Заголовок сообщения: {{message.title}}</li>
+                    <li>Текст сообщения: {{message.body}}</li>
+                    <li>Последнее использование: {{message.last_used}}</li>
+                    {% else %}
+                    <li>Нет активного сообщения, прикрепите сообщение, иначе рассылка не будет отправлена</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card mb-4 rounded-3 shadow-sm">
+            <div class="card-header py-3">
+                <h4 class="my-0 fw-normal">Клиенты рассылки</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mt-3 mb-4">
+                    {% if client_list %}
+                    {% for client in client_list %}
+                    <li>Клиент: {{client.email}}</li>
+                    {% endfor %}
+                    {% else %}
+                    <li>Нет активных клиентов, прикрепите клиентов, иначе рассылка не будет отправлена</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="text-center">
+    <a class="w-10 btn btn-lg btn-danger" href="{% url 'mailing:mailing_delete' object.pk %}">Удалить</a>
+    <a class="w-10 btn btn-lg btn-warning"
+       href="{% url 'mailing:mailing_update' object.pk %}">Редактировать</a>
+    <a class="w-10 btn btn-lg btn-info" href="{% url 'mailing:mailing_list' %}">К списку</a>
+</div>
+{% endblock %}
