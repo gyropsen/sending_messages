@@ -45,9 +45,10 @@ class Mailing(models.Model):
 
 class Message(models.Model):
     # DATABASE FIELDS
-    title = models.CharField(max_length=128, verbose_name='Тема письма')
+    title = models.CharField(max_length=128, unique=True, verbose_name='Тема письма')
     body = models.TextField(verbose_name='Тело письма')
     last_used = models.DateField(auto_now=True, verbose_name='Дата последнего использования')
+    is_active = models.BooleanField(default=False, verbose_name='Активное сообщение')
 
     mailing = models.ForeignKey(Mailing, on_delete=models.SET_NULL, **NULLABLE, verbose_name="Активная рассылка")
 

@@ -1,4 +1,37 @@
 {% extends 'mailing/base.html' %}
 {% block content %}
-{% include 'mailing/includes/inc_card_form.html' %}
+<div class="row mb-3 text-center">
+    <div class="col">
+        <div class="card mb-4 rounded-3 shadow-sm">
+            <div class="card-header py-3">
+                <h4 class="my-0 fw-normal">
+                    {% if object %}
+                    Редактирование сообщения
+                    {% else %}
+                    Создание сообщения
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" class="col-12">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="w-10 btn btn-lg btn-success">
+                        {% if object %}
+                        Сохранить
+                        {% else %}
+                        Создать
+                        {% endif %}
+                    </button>
+                    {% if object %}
+                        <a class="w-10 btn btn-lg btn-warning" href="{% url 'mailing:message_detail' object.pk %}">
+                            Отменить</a>
+                    {% else %}
+                        <a class="w-10 btn btn-lg btn-warning" href="{% url 'mailing:message_list' %}">Отменить</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

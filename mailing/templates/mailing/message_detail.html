@@ -8,15 +8,17 @@
                 <h4 class="my-0 fw-normal">Тема сообщения: {{object.title}}</h4>
             </div>
             <div class="card-body">
-                <h4>Активная рассылка:
-                    {% if object.mailing %}
-                    {{object.mailing}}
-                    {% else %}
-                    Нет активной рассылки
-                    {% endif%}
-                </h4>
-                <h5>Текст сообщения: {{object.body}}</h5>
-                <h4>Последнее использование: {{object.last_used}}</h4>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li>Активная рассылка:
+                        {% if object.mailing %}
+                        {{object.mailing}}
+                        {% else %}
+                        Нет активной рассылки
+                        {% endif %}
+                    </li>
+                    <li>Текст сообщения: {{object.body}}</li>
+                    <li>Последнее использование: {{object.last_used}}</li>
+                </ul>
             </div>
             <div class="card-footer">
                 <a class="w-10 btn btn-lg btn-danger" href="{% url 'mailing:message_delete' object.pk %}">Удалить</a>
