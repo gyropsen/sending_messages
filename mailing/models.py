@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 
 NULLABLE = {'blank': True, 'null': True}
@@ -25,6 +27,7 @@ class Mailing(models.Model):
 
     # DATABASE FIELDS
     name = models.CharField(max_length=128, verbose_name='Название рассылки', unique=True)
+    datetime_created = models.DateTimeField(verbose_name='Дата и время создания', auto_now_add=True)
     datetime_start = models.DateTimeField(verbose_name='Дата и время старта')
     datetime_stop = models.DateTimeField(verbose_name='Дата и время окончания')
     periodicity = models.CharField(max_length=8, choices=PERIODICITY, default=MONTHLY, verbose_name='Периодичность')
@@ -46,8 +49,7 @@ class Message(models.Model):
     body = models.TextField(verbose_name='Тело письма')
     last_used = models.DateField(auto_now=True, verbose_name='Дата последнего использования')
 
-    mailing = models.OneToOneField(Mailing, on_delete=models.SET_NULL, verbose_name="Активная рассылка", default=False,
-                                   **NULLABLE)
+    mailing = models.ForeignKey(Mailing, on_delete=models.SET_NULL, **NULLABLE, verbose_name="Активная рассылка")
 
     # META CLASS
     class Meta:
