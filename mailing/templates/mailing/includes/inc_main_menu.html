@@ -4,7 +4,7 @@
     </a>
 
     <nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">
-        <a class="me-3 py-2 link-body-emphasis text-decoration-none" href="#">Клиенты</a>
+        <a class="me-3 py-2 link-body-emphasis text-decoration-none" href="{% url 'data_statistics:client_list' %}">Клиенты</a>
         <a class="me-3 py-2 link-body-emphasis text-decoration-none" href="{% url 'mailing:message_list' %}">Сообщения</a>
         <a class="me-3 py-2 link-body-emphasis text-decoration-none" href="{% url 'data_statistics:mailing_stat_list' %}">Статистика</a>
         <a class="py-2 link-body-emphasis text-decoration-none" href="{% url 'mailing:mailing_list' %}">Рассылки</a>
