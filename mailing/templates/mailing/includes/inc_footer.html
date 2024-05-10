@@ -13,10 +13,14 @@
         <div class="col-6 col-md">
             <h5>Инструменты</h5>
             <ul class="list-unstyled text-small">
-                <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Клиенты</a></li>
-                <li class="mb-1"><a class="link-secondary text-decoration-none" href="{% url 'mailing:message_list' %}">Сообщения</a></li>
-                <li class="mb-1"><a class="link-secondary text-decoration-none" href="{% url 'mailing:mailing_list' %}">Рассылки</a></li>
-                <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Статистика</a></li>
+                <li class="mb-1"><a class="link-secondary text-decoration-none"
+                                    href="{% url 'data_statistics:client_list' %}">Клиенты</a></li>
+                <li class="mb-1"><a class="link-secondary text-decoration-none"
+                                    href="{% url 'mailing:message_list' %}">Сообщения</a></li>
+                <li class="mb-1"><a class="link-secondary text-decoration-none"
+                                    href="{% url 'mailing:mailing_list' %}">Рассылки</a></li>
+                <li class="mb-1"><a class="link-secondary text-decoration-none"
+                                    href="{% url 'data_statistics:mailing_stat_list' %}">Статистика</a></li>
             </ul>
         </div>
         <div class="col-6 col-md">
