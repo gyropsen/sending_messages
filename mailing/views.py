@@ -1,9 +1,10 @@
-from django.forms import inlineformset_factory, formset_factory, modelform_factory
+from django.forms import inlineformset_factory, modelformset_factory, formset_factory
 from mailing.forms import MessageForm, MailingForm
 from mailing.models import Mailing, Message
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
-from django.core.exceptions import FullResultSet
+from data_statistics.forms import ClientForm
+from data_statistics.models import Client
 
 
 class MessageListView(ListView):
@@ -59,15 +60,14 @@ class MailingCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
         MessageFormset = inlineformset_factory(Mailing, Message, form=MessageForm, extra=1)
-        # ClientFormset = inlineformset_factory(Mailing, Message, form=ClientForm, extra=1)
+
         if self.request.method == "POST":
             message_formset = MessageFormset(self.request.POST, instance=self.object)
-            # client_formset = ClientFormset(self.request.POST, instance=self.object)
         else:
             message_formset = MessageFormset(instance=self.object)
-            # client_formset = ClientFormset(instance=self.object)
+
         context_data['message_formset'] = message_formset
-        # context_data['client_formset'] = client_formset
+        context_data['clients'] = Client.objects.all()
         return context_data
 
     def form_valid(self, form):
@@ -88,17 +88,18 @@ class MailingDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
+
+        # Получение данных рассылки
         messages = Message.objects.filter(mailing=self.object)
+        clients = [client for client in self.object.client_set.all()]
+
         if messages:
             for message in messages:
-                if message.is_active is False:
-                    active_message = None
-                else:
-                    active_message = message
+                if message.is_active:
+                    context_data['message'] = message
                     break
-        else:
-            active_message = None
-        context_data['message'] = active_message
+
+        context_data['client_list'] = clients
         return context_data
 
 
@@ -110,16 +111,20 @@ class MailingUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
+
+        # Создать формсеты
         MessageFormset = inlineformset_factory(Mailing, Message, form=MessageForm, extra=1)
-        # ClientFormset = inlineformset_factory(Mailing, Message, form=ClientForm, extra=1)
+        ClientFormset = modelformset_factory(Client, form=ClientForm, extra=1)
+
+        # Если POST - сохраняем данные, иначе пустая форма
         if self.request.method == "POST":
             message_formset = MessageFormset(self.request.POST, instance=self.object)
-            # client_formset = ClientFormset(self.request.POST, instance=self.object)
+            client_formset = ClientFormset(self.request.POST)
         else:
             message_formset = MessageFormset(instance=self.object)
-            # client_formset = ClientFormset(instance=self.object)
+            client_formset = ClientFormset(queryset=Client.objects.all())
         context_data['message_formset'] = message_formset
-        # context_data['client_formset'] = client_formset
+        context_data['client_formset'] = client_formset
         return context_data
 
     def get_success_url(self):
@@ -128,11 +133,15 @@ class MailingUpdateView(UpdateView):
     def form_valid(self, form):
         context_data = self.get_context_data()
         message_formset = context_data['message_formset']
+        client_formset = context_data['client_formset']
         object_ = form.save()
 
-        if message_formset.is_valid():
+        if message_formset.is_valid() and client_formset.is_valid():
             message_formset.instance = object_
+            client_formset.instance = object_
+
             message_formset.save()
+            client_formset.save()
         return super().form_valid(form)
 
 
