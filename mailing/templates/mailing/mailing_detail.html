@@ -1,6 +1,12 @@
 {% extends 'mailing/base.html' %}
 
 {% block content %}
+<div class="mb-5 text-center">
+    <a class="w-10 btn btn-lg btn-danger" href="{% url 'mailing:mailing_delete' object.pk %}">Удалить</a>
+    <a class="w-10 btn btn-lg btn-warning"
+       href="{% url 'mailing:mailing_update' object.pk %}">Редактировать</a>
+    <a class="w-10 btn btn-lg btn-info" href="{% url 'mailing:mailing_list' %}">К списку</a>
+</div>
 <div class="row row-cols-1 row-cols-md-3 mb-2 text-center">
     <div class="col">
         <div class="card mb-4 rounded-3 shadow-sm">
@@ -44,8 +50,10 @@
             <div class="card-body">
                 <ul class="list-unstyled mt-3 mb-4">
                     {% if client_list %}
+                    <li>Всего клиентов в рассылке: {{client_list|length}}</li>
                     {% for client in client_list %}
-                    <li>Клиент: {{client.email}}</li>
+
+                    <li>{{forloop.counter}}. {{client.email|truncatechars:28}}</li>
                     {% endfor %}
                     {% else %}
                     <li>Нет активных клиентов, прикрепите клиентов, иначе рассылка не будет отправлена</li>
@@ -55,10 +63,5 @@
         </div>
     </div>
 </div>
-<div class="text-center">
-    <a class="w-10 btn btn-lg btn-danger" href="{% url 'mailing:mailing_delete' object.pk %}">Удалить</a>
-    <a class="w-10 btn btn-lg btn-warning"
-       href="{% url 'mailing:mailing_update' object.pk %}">Редактировать</a>
-    <a class="w-10 btn btn-lg btn-info" href="{% url 'mailing:mailing_list' %}">К списку</a>
-</div>
+
 {% endblock %}
