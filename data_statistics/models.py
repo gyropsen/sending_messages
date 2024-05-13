@@ -25,7 +25,7 @@ class Client(models.Model):
 class MailingStat(models.Model):
     # DATABASE FIELDS
     name = models.CharField(max_length=128, **NULLABLE, verbose_name='Название статистики рассылки')
-    attempt_datetime = models.DateTimeField(verbose_name='Дата и время последней попытки')
+    attempt_datetime = models.DateTimeField(verbose_name='Дата и время последней попытки', auto_now_add=True)
     status_attempt = models.BooleanField(default=False, verbose_name='Статус попытки')
     response = models.CharField(max_length=128, **NULLABLE, verbose_name='Ответ почтового сервера')
 
