@@ -1,8 +1,9 @@
-from django.forms import inlineformset_factory, modelformset_factory, formset_factory
+from django.forms import inlineformset_factory, modelformset_factory
 from mailing.forms import MessageForm, MailingForm
 from mailing.models import Mailing, Message
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
+
 from data_statistics.forms import ClientForm
 from data_statistics.models import Client
 
@@ -67,7 +68,6 @@ class MailingCreateView(CreateView):
             message_formset = MessageFormset(instance=self.object)
 
         context_data['message_formset'] = message_formset
-        context_data['clients'] = Client.objects.all()
         return context_data
 
     def form_valid(self, form):
@@ -90,15 +90,10 @@ class MailingDetailView(DetailView):
         context_data = super().get_context_data(**kwargs)
 
         # Получение данных рассылки
-        messages = Message.objects.filter(mailing=self.object)
+        messages = Message.objects.filter(mailing=self.object).filter(is_active=True)
         clients = [client for client in self.object.client_set.all()]
 
-        if messages:
-            for message in messages:
-                if message.is_active:
-                    context_data['message'] = message
-                    break
-
+        context_data['message'] = messages[0] if messages else None
         context_data['client_list'] = clients
         return context_data
 
@@ -123,6 +118,7 @@ class MailingUpdateView(UpdateView):
         else:
             message_formset = MessageFormset(instance=self.object)
             client_formset = ClientFormset(queryset=Client.objects.all())
+
         context_data['message_formset'] = message_formset
         context_data['client_formset'] = client_formset
         return context_data

@@ -13,6 +13,6 @@ class MessageAdmin(admin.ModelAdmin):
 
 @admin.register(Mailing)
 class MailingAdmin(admin.ModelAdmin):
-    list_display = ('name', 'datetime_start', 'datetime_stop', 'periodicity', 'status',)
+    list_display = ('name', 'time_start', 'time_stop', 'periodicity', 'status',)
     search_fields = ('name',)
     list_filter = ('status', 'periodicity',)

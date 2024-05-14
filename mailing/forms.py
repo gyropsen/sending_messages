@@ -23,16 +23,16 @@ class MailingForm(StyleFormMixin, forms.ModelForm):
         model = Mailing
         exclude = ('status',)
         widgets = {
-            'datetime_start': forms.DateTimeInput(
-                format="%Y-%m-%d %H:%M:%S",
+            'time_start': forms.TimeInput(
+                format="%H:%M:%S",
                 attrs={'class': 'form-control',
-                       'placeholder': 'Select a date and time',
-                       'type': 'datetime-local'}
+                       'placeholder': 'Select a time',
+                       'type': 'time'}
             ),
-            'datetime_stop': forms.DateTimeInput(
-                format="%Y-%m-%d %H:%M:%S",
+            'time_stop': forms.TimeInput(
+                format="%H:%M:%S",
                 attrs={'class': 'form-control',
-                       'placeholder': 'Select a date and time',
-                       'type': 'datetime-local'}
+                       'placeholder': 'Select a time',
+                       'type': 'time'}
             )
         }
