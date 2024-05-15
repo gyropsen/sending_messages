@@ -1,0 +1,20 @@
+{% extends 'mailing/base.html' %}
+{% block content %}
+<div class="row mb-3 text-center">
+    <div class="col">
+        <div class="card mb-4 rounded-3 shadow-sm">
+            <div class="card-header py-3">
+                <h4 class="my-0 fw-normal">Подтверждение электронной почты</h4>
+            </div>
+            <div class="card-body">
+                {{ message }}
+                {% if url %}
+                url
+                {% else %}
+                Можете войти на сайт
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

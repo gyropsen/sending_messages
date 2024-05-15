@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from django.urls import reverse_lazy
 
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
 
     "mailing",
     "data_statistics",
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -141,3 +143,8 @@ EMAIL_USE_TLS = True
 
 SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+AUTH_USER_MODEL = "users.User"
+
+LOGIN_REDIRECT_URL = reverse_lazy('mailing:mailing_list')
+LOGOUT_REDIRECT_URL = reverse_lazy('users:login')
