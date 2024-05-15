@@ -3,18 +3,20 @@ from mailing.forms import MessageForm, MailingForm
 from mailing.models import Mailing, Message
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 from data_statistics.forms import ClientForm
 from data_statistics.models import Client
 
 
-class MessageListView(ListView):
+class MessageListView(LoginRequiredMixin, ListView):
     model = Message
     extra_context = {'title': 'Просмотр сообщений',
                      'description': 'В таблице отображаются все сообщения'}
 
 
-class MessageCreateView(CreateView):
+class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
     form_class = MessageForm
     extra_context = {'title': 'Создание сообщения',
@@ -22,13 +24,13 @@ class MessageCreateView(CreateView):
     success_url = reverse_lazy('mailing:message_list')
 
 
-class MessageDetailView(DetailView):
+class MessageDetailView(LoginRequiredMixin, DetailView):
     model = Message
     extra_context = {'title': 'Просмотр сообщения',
                      'description': 'Изучите параметры сообщения, которое будет отправляется вашим клиентам'}
 
 
-class MessageUpdateView(UpdateView):
+class MessageUpdateView(LoginRequiredMixin, UpdateView):
     model = Message
     form_class = MessageForm
     extra_context = {'title': 'Редактирование сообщения',
@@ -38,20 +40,20 @@ class MessageUpdateView(UpdateView):
         return reverse('mailing:message_detail', args=[self.object.pk])
 
 
-class MessageDeleteView(DeleteView):
+class MessageDeleteView(LoginRequiredMixin, DeleteView):
     model = Message
     success_url = reverse_lazy('mailing:message_list')
     extra_context = {"title": 'Удаление сообщения',
                      'description': "После удаления сообщение восстановить невозможно"}
 
 
-class MailingListView(ListView):
+class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
     extra_context = {"title": 'Просмотр рассылок',
                      'description': "В таблице отображаются все рассылки"}
 
 
-class MailingCreateView(CreateView):
+class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailing
     form_class = MailingForm
     extra_context = {'title': 'Создание рассылки',
@@ -81,7 +83,7 @@ class MailingCreateView(CreateView):
         return super().form_valid(form)
 
 
-class MailingDetailView(DetailView):
+class MailingDetailView(LoginRequiredMixin, DetailView):
     model = Mailing
     extra_context = {'title': 'Просмотр рассылки',
                      'description': 'Изучите параметры рассылки, которая будет отправлена вашим клиентам'}
@@ -98,7 +100,7 @@ class MailingDetailView(DetailView):
         return context_data
 
 
-class MailingUpdateView(UpdateView):
+class MailingUpdateView(LoginRequiredMixin, UpdateView):
     model = Mailing
     form_class = MailingForm
     extra_context = {'title': 'Редактирование рассылки',
@@ -141,7 +143,7 @@ class MailingUpdateView(UpdateView):
         return super().form_valid(form)
 
 
-class MailingDeleteView(DeleteView):
+class MailingDeleteView(LoginRequiredMixin, DeleteView):
     model = Mailing
     success_url = reverse_lazy('mailing:mailing_list')
     extra_context = {"title": 'Удаление рассылки',

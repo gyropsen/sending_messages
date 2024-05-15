@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG")
+DEBUG = os.getenv('DEBUG', False) == "True"
 
 ALLOWED_HOSTS = []
 
@@ -148,3 +148,4 @@ AUTH_USER_MODEL = "users.User"
 
 LOGIN_REDIRECT_URL = reverse_lazy('mailing:mailing_list')
 LOGOUT_REDIRECT_URL = reverse_lazy('users:login')
+LOGIN_URL = reverse_lazy('users:register')

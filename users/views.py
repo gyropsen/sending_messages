@@ -1,10 +1,11 @@
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, TemplateView
+from django.views.generic import CreateView, UpdateView
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 import secrets
 from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from users.forms import UserAuthenticationForm, UserRegistrationForm, UserUserChangeForm
 from users.models import User
@@ -18,7 +19,7 @@ class Login(LoginView):
                      'description': 'Введите вашу электронную почту и пароль для авторизации'}
 
 
-class Logout(LogoutView):
+class Logout(LoginRequiredMixin, LogoutView):
     pass
 
 
@@ -51,7 +52,7 @@ class UserRegisterView(CreateView):
         return reverse_lazy('users:email_confirm', args=[self.request.POST.get('email')])
 
 
-class UserUpdateView(UpdateView):
+class UserUpdateView(LoginRequiredMixin, UpdateView):
     model = User
     success_url = reverse_lazy('users:profile')
     form_class = UserUserChangeForm

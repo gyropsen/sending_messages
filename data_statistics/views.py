@@ -4,22 +4,23 @@ from django.urls import reverse_lazy
 from data_statistics.forms import ClientForm
 from mailing.models import Mailing
 from django.urls import reverse
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 # Интерфейс для просмотра статистики рассылок
-class MailingStatListView(ListView):
+class MailingStatListView(LoginRequiredMixin, ListView):
     model = MailingStat
     extra_context = {'title': 'Просмотр попыток рассылки',
                      'description': 'В таблице отображаются все попытки рассылки'}
 
 
-class MailingStatDetailView(DetailView):
+class MailingStatDetailView(LoginRequiredMixin, DetailView):
     model = MailingStat
     extra_context = {'title': 'Просмотр попыток рассылки',
                      'description': 'Подробный отчёт по попытке рассылки'}
 
 
-class MailingStatDeleteView(DeleteView):
+class MailingStatDeleteView(LoginRequiredMixin, DeleteView):
     model = MailingStat
     success_url = reverse_lazy('data_statistics:mailing_stat_list')
     extra_context = {'title': 'Удаление попытки рассылки',
@@ -27,19 +28,13 @@ class MailingStatDeleteView(DeleteView):
 
 
 # Интерфейс для просмотра клиентов рассылки
-class ClientListView(ListView):
+class ClientListView(LoginRequiredMixin, ListView):
     model = Client
     extra_context = {'title': 'Просмотр клиентов рассылки',
                      'description': 'В таблице отображаются все клиенты рассылки'}
 
-    # def get_context_data(self, *, object_list=None, **kwargs):
-    #     context_data = super().get_context_data(object_list=None, **kwargs)
-    #
-    #     print(self.object_list[0].mailing)
-    #     return context_data
 
-
-class ClientCreateView(CreateView):
+class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
     form_class = ClientForm
     success_url = reverse_lazy('data_statistics:client_list')
@@ -53,7 +48,7 @@ class ClientCreateView(CreateView):
         return super().form_valid(form)
 
 
-class ClientDetailView(DetailView):
+class ClientDetailView(LoginRequiredMixin, DetailView):
     model = Client
     extra_context = {'title': 'Просмотр клиента рассылки',
                      'description': 'Изучите параметры клиента, которому отправляется рассылка'}
@@ -64,7 +59,7 @@ class ClientDetailView(DetailView):
         return context_data
 
 
-class ClientUpdateView(UpdateView):
+class ClientUpdateView(LoginRequiredMixin, UpdateView):
     model = Client
     form_class = ClientForm
     extra_context = {'title': 'Редактирование клиента рассылки',
@@ -74,7 +69,7 @@ class ClientUpdateView(UpdateView):
         return reverse('data_statistics:client_detail', args=[self.object.pk])
 
 
-class ClientDeleteView(DeleteView):
+class ClientDeleteView(LoginRequiredMixin, DeleteView):
     model = Client
     success_url = reverse_lazy('data_statistics:client_list')
     extra_context = {'title': 'Удаление клиента рассылки',
