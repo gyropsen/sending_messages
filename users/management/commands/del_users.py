@@ -4,7 +4,6 @@ from users.models import User
 
 
 class Command(BaseCommand):
-
     def handle(self, *args, **options):
         for user in User.objects.all():
             if not user.is_superuser:
