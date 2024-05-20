@@ -1,8 +1,16 @@
 from django.urls import path
 
 from data_statistics.apps import DataStatisticsConfig
-from data_statistics.views import (ClientCreateView, ClientDeleteView, ClientDetailView, ClientListView,
-                                   ClientUpdateView, MailingStatDeleteView, MailingStatDetailView, MailingStatListView)
+from data_statistics.views import (
+    ClientCreateView,
+    ClientDeleteView,
+    ClientDetailView,
+    ClientListView,
+    ClientUpdateView,
+    MailingStatDeleteView,
+    MailingStatDetailView,
+    MailingStatListView,
+)
 
 app_name = DataStatisticsConfig.name
 

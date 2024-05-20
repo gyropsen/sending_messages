@@ -25,8 +25,8 @@ class Mailing(models.Model):
     # DATABASE FIELDS
     name = models.CharField(max_length=128, verbose_name="Название рассылки", unique=True)
     datetime_created = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время создания")
-    time_start = models.TimeField(default=timezone.now, verbose_name="Дата и время старта")
-    time_stop = models.TimeField(default=timezone.now, verbose_name="Дата и время окончания")
+    time_start = models.TimeField(default=timezone.now, verbose_name="Время старта")
+    time_stop = models.TimeField(default=timezone.now, verbose_name="Время окончания")
     periodicity = models.CharField(max_length=8, choices=PERIODICITY, default=MONTHLY, verbose_name="Периодичность")
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default=CREATED, verbose_name="Статус")
 

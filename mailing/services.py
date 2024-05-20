@@ -40,11 +40,15 @@ def sending_mailing(mailing):
                 recipient_list=[client.email for client in clients],
             )
         except Exception as error:
-            mailing_stat = MailingStat.objects.create(name=f"Error {mailing.name}", response=error, mailing=mailing)
+            mailing_stat = MailingStat.objects.create(
+                name=f"Error {mailing.name}", response=error, mailing=mailing, status_attempt=False
+            )
             mailing_stat.save()
 
         else:
-            mailing_stat = MailingStat.objects.create(name=f"OK {mailing.name}", response="OK", mailing=mailing)
+            mailing_stat = MailingStat.objects.create(
+                name=f"OK {mailing.name}", response="OK", mailing=mailing, status_attempt=True
+            )
             mailing_stat.save()
     logger.info("sending_mailing done!")
 
@@ -52,12 +56,16 @@ def sending_mailing(mailing):
 def check_jobs():
     for mailing in Mailing.objects.all():
         check_status(mailing)
+        print(mailing.name, MailingStat.objects.filter(mailing=mailing).exists())
         if not MailingStat.objects.filter(mailing=mailing).exists():
-            add_job(mailing)
+            add_job_mailing(mailing)
+            MailingStat.objects.create(
+                name=f"Pause {mailing.name}", response="Pause", mailing=mailing, status_attempt=False
+            )
     logger.info("Check_jobs done!")
 
 
-def add_job(mailing):
+def add_job_mailing(mailing):
     if mailing.periodicity == "DAY":
         period = CronTrigger(hour=mailing.time_start.hour, minute=mailing.time_start.minute)
     elif mailing.periodicity == "WEEK":

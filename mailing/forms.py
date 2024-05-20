@@ -20,6 +20,8 @@ class MessageForm(StyleFormMixin, forms.ModelForm):
 
 
 class MailingForm(StyleFormMixin, forms.ModelForm):
+    forbidden_words = ["казино", "криптовалюта", "крипта", "биржа", "дешево", "бесплатно", "обман", "полиция", "радар"]
+
     class Meta:
         model = Mailing
         exclude = ("status",)
@@ -31,3 +33,17 @@ class MailingForm(StyleFormMixin, forms.ModelForm):
                 format="%H:%M:%S", attrs={"class": "form-control", "placeholder": "Select a time", "type": "time"}
             ),
         }
+
+    def clean_name(self):
+        cleaned_data = self.cleaned_data['name']
+        if cleaned_data.lower() in MailingForm.forbidden_words:
+            raise forms.ValidationError(f'Содержит запрещенное слово: {cleaned_data}. Введите другое имя продукта')
+        return cleaned_data
+
+    def clean(self):
+        cleaned_data = super().clean()
+        time_start = cleaned_data.get('time_start')
+        time_stop = cleaned_data.get('time_stop')
+
+        if time_start >= time_stop:
+            raise forms.ValidationError("Время старта больше или равно времени окончания")
