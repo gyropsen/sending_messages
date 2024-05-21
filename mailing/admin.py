@@ -19,6 +19,7 @@ class MessageAdmin(admin.ModelAdmin):
 @admin.register(Mailing)
 class MailingAdmin(admin.ModelAdmin):
     list_display = (
+        "pk",
         "name",
         "time_start",
         "time_stop",

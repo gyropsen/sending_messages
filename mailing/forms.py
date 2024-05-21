@@ -3,7 +3,19 @@ from django import forms
 from mailing.models import Mailing, Message
 
 
+class ForbiddenWordsMixin:
+    """
+    Миксин для указания запрещённых слов
+    """
+
+    forbidden_words = ["казино", "криптовалюта", "крипта", "биржа", "дешево", "бесплатно", "обман", "полиция", "радар"]
+
+
 class StyleFormMixin:
+    """
+    Миксин для контроля стилей формы
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
@@ -13,18 +25,50 @@ class StyleFormMixin:
                 field.widget.attrs["class"] = "form-control"
 
 
-class MessageForm(StyleFormMixin, forms.ModelForm):
+class MessageForm(StyleFormMixin, ForbiddenWordsMixin, forms.ModelForm):
+    """
+    Форма сообщения
+    """
+    mailing = forms.ModelChoiceField(queryset=Mailing.objects.none())
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['mailing'].queryset = Mailing.objects.filter(owner=user)
+
     class Meta:
         model = Message
-        fields = "__all__"
+        exclude = ("owner",)
+
+    def clean_title(self):
+        """
+        Функция проверки на запрещенные слова
+        """
+        cleaned_data = self.cleaned_data["title"]
+        for word in cleaned_data.lower().split(" "):
+            if word in MessageForm.forbidden_words:
+                raise forms.ValidationError(f"Содержит запрещенное слово: {word}.")
+        return cleaned_data
+
+    def clean_body(self):
+        """
+        Функция проверки на запрещенные слова
+        """
+        cleaned_data = self.cleaned_data["body"]
+        for word in cleaned_data.lower().split(" "):
+            if word in MessageForm.forbidden_words:
+                raise forms.ValidationError(f"Содержит запрещенное слово: {word}.")
+        return cleaned_data
 
 
-class MailingForm(StyleFormMixin, forms.ModelForm):
-    forbidden_words = ["казино", "криптовалюта", "крипта", "биржа", "дешево", "бесплатно", "обман", "полиция", "радар"]
+class MailingForm(StyleFormMixin, ForbiddenWordsMixin, forms.ModelForm):
+    """
+    Форма рассылки
+    """
 
     class Meta:
         model = Mailing
-        exclude = ("status",)
+        exclude = ("status", "owner")
         widgets = {
             "time_start": forms.TimeInput(
                 format="%H:%M:%S", attrs={"class": "form-control", "placeholder": "Select a time", "type": "time"}
@@ -35,15 +79,22 @@ class MailingForm(StyleFormMixin, forms.ModelForm):
         }
 
     def clean_name(self):
-        cleaned_data = self.cleaned_data['name']
-        if cleaned_data.lower() in MailingForm.forbidden_words:
-            raise forms.ValidationError(f'Содержит запрещенное слово: {cleaned_data}. Введите другое имя продукта')
+        """
+        Функция проверки на запрещенные слова
+        """
+        cleaned_data = self.cleaned_data["name"]
+        for word in cleaned_data.lower().split(" "):
+            if word in MailingForm.forbidden_words:
+                raise forms.ValidationError(f"Содержит запрещенное слово: {cleaned_data}.")
         return cleaned_data
 
     def clean(self):
+        """
+        Функция проверки на корректность указания времени
+        """
         cleaned_data = super().clean()
-        time_start = cleaned_data.get('time_start')
-        time_stop = cleaned_data.get('time_stop')
+        time_start = cleaned_data.get("time_start")
+        time_stop = cleaned_data.get("time_stop")
 
         if time_start >= time_stop:
             raise forms.ValidationError("Время старта больше или равно времени окончания")

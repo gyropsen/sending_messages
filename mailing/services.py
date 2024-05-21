@@ -18,6 +18,10 @@ scheduler = BackgroundScheduler(timezone=settings.TIME_ZONE)
 
 
 def check_status(mailing):
+    """
+    Проверка статуса рассылки, при необходимости - смена
+    :param mailing: объект рассылки из базы данных
+    """
     if mailing.time_start <= timezone.now().time() <= mailing.time_stop:
         mailing.status = "LA"
     elif mailing.time_stop < timezone.now().time():
@@ -29,6 +33,10 @@ def check_status(mailing):
 
 
 def sending_mailing(mailing):
+    """
+    Функция отправки электронных писем с определенным содержанием и определенным клиентам
+    :param mailing: объект рассылки из базы данных
+    """
     messages = Message.objects.filter(mailing=mailing).filter(is_active=True)
     clients = mailing.client_set.all()
     if messages and clients:
@@ -54,10 +62,15 @@ def sending_mailing(mailing):
 
 
 def check_jobs():
+    """
+    Проверка каждой рассылки на наличие статистики,
+    если статистика есть - пропуск, нет - добавление периодической задачи
+    """
     for mailing in Mailing.objects.all():
         check_status(mailing)
         print(mailing.name, MailingStat.objects.filter(mailing=mailing).exists())
         if not MailingStat.objects.filter(mailing=mailing).exists():
+            # Статистики нет, добавляем периодическую задачу, создаем статистику
             add_job_mailing(mailing)
             MailingStat.objects.create(
                 name=f"Pause {mailing.name}", response="Pause", mailing=mailing, status_attempt=False
@@ -66,6 +79,10 @@ def check_jobs():
 
 
 def add_job_mailing(mailing):
+    """
+    Определение периодичности и времени выполнения, и добавление задачи в планировщик
+    :param mailing: объект рассылки из базы данных
+    """
     if mailing.periodicity == "DAY":
         period = CronTrigger(hour=mailing.time_start.hour, minute=mailing.time_start.minute)
     elif mailing.periodicity == "WEEK":
@@ -93,22 +110,25 @@ def add_job_mailing(mailing):
 @util.close_old_connections
 def delete_old_job_executions(max_age=2_628_000):
     """
-    This job deletes APScheduler job execution entries older than `max_age` from the database.
-    It helps to prevent the database from filling up with old historical records that are no
-    longer useful.
+    Это задание удаляет из базы данных записи выполнения заданий APScheduler старше max_age.
+    Это помогает предотвратить заполнение базы данных старыми историческими записями, которые не являются
+    дольше полезно.
 
-    :param max_age: The maximum length of time to retain historical job execution records.
+    :param max_age: Максимальный срок хранения исторических записей выполнения заданий.
     """
     DjangoJobExecution.objects.delete_old_job_executions(max_age)
 
 
 def start_scheduler():
+    """
+    Добавление задания проверки рассылок
+    """
     scheduler.add_jobstore(DjangoJobStore(), "default")
 
     scheduler.add_job(
         check_jobs,
-        trigger=CronTrigger(minute="*/10"),  # Every 10 minutes
-        id="check_jobs",  # The `id` assigned to each job MUST be unique
+        trigger=CronTrigger(minute="*/10"),
+        id="check_jobs",
         max_instances=1,
         replace_existing=True,
     )

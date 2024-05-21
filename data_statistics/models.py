@@ -1,5 +1,7 @@
 from django.db import models
 
+from config import settings
+
 NULLABLE = {"null": True, "blank": True}
 
 
@@ -11,6 +13,7 @@ class Client(models.Model):
     comment = models.CharField(max_length=128, **NULLABLE, verbose_name="Комментарий")
 
     mailing = models.ManyToManyField("mailing.Mailing", verbose_name="Рассылка")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE, verbose_name="Владелец")
 
     # META CLASS
     class Meta:
@@ -32,6 +35,7 @@ class MailingStat(models.Model):
     mailing = models.ForeignKey(
         "mailing.Mailing", on_delete=models.CASCADE, default=False, verbose_name="Отчет попытки рассылки"
     )
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE, verbose_name="Владелец")
 
     # META CLASS
     class Meta:

@@ -12,7 +12,10 @@
             <th style="width: 22%;">Название</th>
             <th style="width: 34%;">Периодичность</th>
             <th style="width: 22%;">Статус</th>
+            <th style="width: 22%;">Активна</th>
+            <th style="width: 22%;">Владелец</th>
             <th style="width: 22%;">Информация</th>
+
 
         </tr>
         </thead>
@@ -40,6 +43,8 @@
                 Пауза
                 {% endif %}
             </td>
+            <td scope="row">{{object.is_active}}</td>
+            <td scope="row">{{object.owner}}</td>
             <td scope="row">
                 <a href="{% url 'mailing:mailing_detail' object.pk %}" type="button"
                    class="btn btn-lg btn-block btn-outline-info">Просмотреть</a>

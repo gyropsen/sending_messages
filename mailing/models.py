@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
+from config import settings
+
 NULLABLE = {"blank": True, "null": True}
 
 
@@ -29,6 +31,9 @@ class Mailing(models.Model):
     time_stop = models.TimeField(default=timezone.now, verbose_name="Время окончания")
     periodicity = models.CharField(max_length=8, choices=PERIODICITY, default=MONTHLY, verbose_name="Периодичность")
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default=CREATED, verbose_name="Статус")
+    is_active = models.BooleanField(default=False, verbose_name="Активная рассылка")
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE, verbose_name="Владелец")
 
     # META CLASS
     class Meta:
@@ -48,6 +53,7 @@ class Message(models.Model):
     is_active = models.BooleanField(default=False, verbose_name="Активное сообщение")
 
     mailing = models.ForeignKey(Mailing, on_delete=models.SET_NULL, **NULLABLE, verbose_name="Активная рассылка")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE, verbose_name="Владелец")
 
     # META CLASS
     class Meta:

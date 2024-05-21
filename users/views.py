@@ -13,22 +13,40 @@ from users.models import User
 
 
 class Login(LoginView):
+    """
+    Представление - это вызываемый объект, который принимает запрос и возвращает ответ
+    Представление авторизации пользователей
+    """
+
     template_name = "users/login.html"
     form_class = UserAuthenticationForm
     extra_context = {"title": "Вход на сайт", "description": "Введите вашу электронную почту и пароль для авторизации"}
 
 
 class Logout(LoginRequiredMixin, LogoutView):
+    """
+    Представление выхода пользователей
+    """
+
     pass
 
 
 class UserRegisterView(CreateView):
+    """
+    Представление регистрации пользователей
+    """
+
     model = User
     form_class = UserRegistrationForm
     template_name = "users/register.html"
     extra_context = {"title": "Регистрация", "description": "Введите ваши данные для регистрации на сайте"}
 
     def form_valid(self, form):
+        """
+        Функция проверки валидности формы
+        :param form: форма
+        :return: HttpResponseRedirect
+        """
         new_user = form.save()
         new_user.is_active = False
         token = secrets.token_hex(16)
@@ -47,19 +65,39 @@ class UserRegisterView(CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
+        """
+        Функция возврата url представления подтверждения электронной почты
+        :return: url
+        """
         return reverse_lazy("users:email_confirm", args=[self.request.POST.get("email")])
 
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):
+    """
+    Представление редактирования пользователей(в данном случае является и детальным просмотром пользователя,
+    т.е. профилем пользователя)
+    """
+
     model = User
     success_url = reverse_lazy("users:profile")
     form_class = UserUserChangeForm
 
     def get_object(self, queryset=None):
+        """
+        Функция возврата объекта, который будет отображаться в этом представлении
+        :param queryset: None
+        :return: user
+        """
         return self.request.user
 
 
 def email_confirm(request, email):
+    """
+    Функция представления подтверждения электронной почты
+    :param request: request
+    :param email: User.email
+    :return: HTTPResponse
+    """
     context = {
         "title": "Подтверждение электронной почты",
         "description": "Необходимо подтвердить электронную почту для входа на сайт",
@@ -69,7 +107,13 @@ def email_confirm(request, email):
     return render(request, "users/email_confirm.html", context)
 
 
-def success_email_confirm(request, token):
+def success_email_confirm(request, token: str):
+    """
+    Функция представления успешного подтверждения электронной почты
+    :param request: request
+    :param token: User.token
+    :return: HTTPResponse
+    """
     user = get_object_or_404(User, token=token)
     user.is_active = True
     user.save()

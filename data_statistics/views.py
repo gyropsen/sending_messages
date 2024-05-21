@@ -7,8 +7,13 @@ from data_statistics.models import Client, MailingStat
 from mailing.models import Mailing
 
 
-# Интерфейс для просмотра статистики рассылок
+# CRUD Статистики рассылки
 class MailingStatListView(LoginRequiredMixin, ListView):
+    """
+    Представление - это вызываемый объект, который принимает запрос и возвращает ответ
+    Представление всех статистик рассылок
+    """
+
     model = MailingStat
     extra_context = {
         "title": "Просмотр попыток рассылки",
@@ -17,11 +22,19 @@ class MailingStatListView(LoginRequiredMixin, ListView):
 
 
 class MailingStatDetailView(LoginRequiredMixin, DetailView):
+    """
+    Представление детального просмотра статистики рассылки
+    """
+
     model = MailingStat
     extra_context = {"title": "Просмотр попыток рассылки", "description": "Подробный отчёт по попытке рассылки"}
 
 
 class MailingStatDeleteView(LoginRequiredMixin, DeleteView):
+    """
+    Представление удаления статистики рассылки
+    """
+
     model = MailingStat
     success_url = reverse_lazy("data_statistics:mailing_stat_list")
     extra_context = {
@@ -30,8 +43,12 @@ class MailingStatDeleteView(LoginRequiredMixin, DeleteView):
     }
 
 
-# Интерфейс для просмотра клиентов рассылки
+# CRUD Клиентов
 class ClientListView(LoginRequiredMixin, ListView):
+    """
+    Представление всех клиентов
+    """
+
     model = Client
     extra_context = {
         "title": "Просмотр клиентов рассылки",
@@ -40,6 +57,10 @@ class ClientListView(LoginRequiredMixin, ListView):
 
 
 class ClientCreateView(LoginRequiredMixin, CreateView):
+    """
+    Представление создания клиента
+    """
+
     model = Client
     form_class = ClientForm
     success_url = reverse_lazy("data_statistics:client_list")
@@ -49,6 +70,11 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
     }
 
     def form_valid(self, form):
+        """
+        Проверка валидности формы
+        :param form: форма
+        :return: HttpResponseRedirect
+        """
         client = form.save()
         mailing = Mailing.objects.get(pk=self.request.POST.get("mailing"))
         client.mailing.add(mailing)
@@ -56,6 +82,10 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
 
 
 class ClientDetailView(LoginRequiredMixin, DetailView):
+    """
+    Представление детального просмотра клиента
+    """
+
     model = Client
     extra_context = {
         "title": "Просмотр клиента рассылки",
@@ -63,12 +93,20 @@ class ClientDetailView(LoginRequiredMixin, DetailView):
     }
 
     def get_context_data(self, **kwargs):
+        """
+        Функция добавления в context_data всех рассылок, от которых клиент получает сообщения
+        :return: context_data
+        """
         context_data = super().get_context_data(**kwargs)
         context_data["mailings"] = ", ".join(mailing.name for mailing in self.object.mailing.all())
         return context_data
 
 
 class ClientUpdateView(LoginRequiredMixin, UpdateView):
+    """
+    Представление редактирования клиента
+    """
+
     model = Client
     form_class = ClientForm
     extra_context = {
@@ -77,10 +115,18 @@ class ClientUpdateView(LoginRequiredMixin, UpdateView):
     }
 
     def get_success_url(self):
+        """
+        Возвращает url представления детального просмотра рассылки.
+        :return: Url
+        """
         return reverse("data_statistics:client_detail", args=[self.object.pk])
 
 
 class ClientDeleteView(LoginRequiredMixin, DeleteView):
+    """
+    Представление удаления клиента
+    """
+
     model = Client
     success_url = reverse_lazy("data_statistics:client_list")
     extra_context = {
