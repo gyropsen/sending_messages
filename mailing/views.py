@@ -21,7 +21,7 @@ class MessageListView(LoginRequiredMixin, ControlUserObject, ListView):
     extra_context = {"title": "Просмотр сообщений", "description": "В таблице отображаются все сообщения"}
 
 
-class MessageCreateView(LoginRequiredMixin, ControlUserObject, CreateView):
+class MessageCreateView(LoginRequiredMixin, CreateView):
     """
     Представление создания сообщения
     """
@@ -217,8 +217,9 @@ class MailingUpdateView(LoginRequiredMixin, ControlUserObject, UpdateView):
             message_formset = MessageFormset(self.request.POST, instance=self.object)
             client_formset = ClientFormset(self.request.POST)
         else:
-            message_formset = MessageFormset(instance=self.object)
-            client_formset = ClientFormset(queryset=Client.objects.filter(owner=self.request.user))
+            message_formset = MessageFormset(instance=self.object, form_kwargs={"user": self.request.user})
+            client_formset = ClientFormset(queryset=Client.objects.filter(owner=self.request.user),
+                                           form_kwargs={"user": self.request.user})
 
         context_data["message_formset"] = message_formset
         context_data["client_formset"] = client_formset

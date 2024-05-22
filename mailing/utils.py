@@ -3,8 +3,6 @@ from django.core.exceptions import EmptyResultSet, PermissionDenied
 
 class ControlUserObject:
 
-
-
     def get_queryset(self):
         """
         Функция возвращает объекты в зависимости от пользователя в запросе

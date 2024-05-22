@@ -2,12 +2,24 @@ from django import forms
 
 from data_statistics.models import Client
 from mailing.forms import ForbiddenWordsMixin, StyleFormMixin
+from mailing.models import Mailing
 
 
-class ClientForm(StyleFormMixin, ForbiddenWordsMixin, forms.ModelForm):
+class ClientForm(ForbiddenWordsMixin, StyleFormMixin, forms.ModelForm):
+
+    # def __init__(self, *args, user=None, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     if user is not None:
+    #         self.fields['mailing'].queryset = Mailing.objects.filter(owner=user)
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['mailing'].queryset = Mailing.objects.filter(owner=user)
+
     class Meta:
         model = Client
-        fields = "__all__"
+        exclude = ("owner",)
 
     def clean_comment(self):
         """

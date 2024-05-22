@@ -5,10 +5,11 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from data_statistics.forms import ClientForm
 from data_statistics.models import Client, MailingStat
 from mailing.models import Mailing
+from mailing.utils import ControlUserObject
 
 
 # CRUD Статистики рассылки
-class MailingStatListView(LoginRequiredMixin, ListView):
+class MailingStatListView(LoginRequiredMixin, ControlUserObject, ListView):
     """
     Представление - это вызываемый объект, который принимает запрос и возвращает ответ
     Представление всех статистик рассылок
@@ -21,7 +22,7 @@ class MailingStatListView(LoginRequiredMixin, ListView):
     }
 
 
-class MailingStatDetailView(LoginRequiredMixin, DetailView):
+class MailingStatDetailView(LoginRequiredMixin, ControlUserObject, DetailView):
     """
     Представление детального просмотра статистики рассылки
     """
@@ -30,7 +31,7 @@ class MailingStatDetailView(LoginRequiredMixin, DetailView):
     extra_context = {"title": "Просмотр попыток рассылки", "description": "Подробный отчёт по попытке рассылки"}
 
 
-class MailingStatDeleteView(LoginRequiredMixin, DeleteView):
+class MailingStatDeleteView(LoginRequiredMixin, ControlUserObject, DeleteView):
     """
     Представление удаления статистики рассылки
     """
@@ -44,7 +45,7 @@ class MailingStatDeleteView(LoginRequiredMixin, DeleteView):
 
 
 # CRUD Клиентов
-class ClientListView(LoginRequiredMixin, ListView):
+class ClientListView(LoginRequiredMixin, ControlUserObject, ListView):
     """
     Представление всех клиентов
     """
@@ -69,19 +70,32 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
         "description": "Создайте клиента, которому отправляется рассылка",
     }
 
+    def get_form_kwargs(self):
+        """
+        Функция добавления в форму аргумент содержащий текущего пользователя
+        """
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
     def form_valid(self, form):
         """
-        Проверка валидности формы
-        :param form: форма
+        Функция проверки валидности и сохранения формы в базу данных
         :return: HttpResponseRedirect
         """
-        client = form.save()
+        object_ = form.save()
+
+        # Присваивание клиенту рассылки
         mailing = Mailing.objects.get(pk=self.request.POST.get("mailing"))
-        client.mailing.add(mailing)
+        object_.mailing.add(mailing)
+
+        # Присваивание клиенту пользователя
+        object_.owner = self.request.user
+        object_.save()
         return super().form_valid(form)
 
 
-class ClientDetailView(LoginRequiredMixin, DetailView):
+class ClientDetailView(LoginRequiredMixin, ControlUserObject, DetailView):
     """
     Представление детального просмотра клиента
     """
@@ -102,7 +116,7 @@ class ClientDetailView(LoginRequiredMixin, DetailView):
         return context_data
 
 
-class ClientUpdateView(LoginRequiredMixin, UpdateView):
+class ClientUpdateView(LoginRequiredMixin, ControlUserObject, UpdateView):
     """
     Представление редактирования клиента
     """
@@ -114,6 +128,14 @@ class ClientUpdateView(LoginRequiredMixin, UpdateView):
         "description": "Редактируйте параметры клиента, которому отправляется рассылка",
     }
 
+    def get_form_kwargs(self):
+        """
+        Функция добавления в форму аргумент содержащий текущего пользователя
+        """
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
     def get_success_url(self):
         """
         Возвращает url представления детального просмотра рассылки.
@@ -122,7 +144,7 @@ class ClientUpdateView(LoginRequiredMixin, UpdateView):
         return reverse("data_statistics:client_detail", args=[self.object.pk])
 
 
-class ClientDeleteView(LoginRequiredMixin, DeleteView):
+class ClientDeleteView(LoginRequiredMixin, ControlUserObject, DeleteView):
     """
     Представление удаления клиента
     """

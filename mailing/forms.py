@@ -25,7 +25,7 @@ class StyleFormMixin:
                 field.widget.attrs["class"] = "form-control"
 
 
-class MessageForm(StyleFormMixin, ForbiddenWordsMixin, forms.ModelForm):
+class MessageForm(ForbiddenWordsMixin, StyleFormMixin, forms.ModelForm):
     """
     Форма сообщения
     """
@@ -60,7 +60,7 @@ class MessageForm(StyleFormMixin, ForbiddenWordsMixin, forms.ModelForm):
         return cleaned_data
 
 
-class MailingForm(StyleFormMixin, ForbiddenWordsMixin, forms.ModelForm):
+class MailingForm(ForbiddenWordsMixin, StyleFormMixin, forms.ModelForm):
     """
     Форма рассылки
     """
