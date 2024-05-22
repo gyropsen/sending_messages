@@ -1,81 +1,141 @@
-from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
-from data_statistics.models import Client, MailingStat
-from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse, reverse_lazy
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+
 from data_statistics.forms import ClientForm
+from data_statistics.models import Client, MailingStat
 from mailing.models import Mailing
-from django.urls import reverse
+from mailing.utils import AddArgumentsInForms, ControlUserObject
 
 
-# Интерфейс для просмотра статистики рассылок
-class MailingStatListView(ListView):
+# CRUD Статистики рассылки
+class MailingStatListView(LoginRequiredMixin, ControlUserObject, ListView):
+    """
+    Представление - это вызываемый объект, который принимает запрос и возвращает ответ
+    Представление всех статистик рассылок
+    """
+
     model = MailingStat
-    extra_context = {'title': 'Просмотр попыток рассылки',
-                     'description': 'В таблице отображаются все попытки рассылки'}
+    extra_context = {
+        "title": "Просмотр попыток рассылки",
+        "description": "В таблице отображаются все попытки рассылки",
+    }
 
 
-class MailingStatDetailView(DetailView):
+class MailingStatDetailView(LoginRequiredMixin, ControlUserObject, DetailView):
+    """
+    Представление детального просмотра статистики рассылки
+    """
+
     model = MailingStat
-    extra_context = {'title': 'Просмотр попыток рассылки',
-                     'description': 'Подробный отчёт по попытке рассылки'}
+    extra_context = {"title": "Просмотр попыток рассылки", "description": "Подробный отчёт по попытке рассылки"}
 
 
-class MailingStatDeleteView(DeleteView):
+class MailingStatDeleteView(LoginRequiredMixin, ControlUserObject, DeleteView):
+    """
+    Представление удаления статистики рассылки
+    """
+
     model = MailingStat
-    success_url = reverse_lazy('data_statistics:mailing_stat_list')
-    extra_context = {'title': 'Удаление попытки рассылки',
-                     'description': 'После удаления попытки рассылки восстановить невозможно'}
+    success_url = reverse_lazy("data_statistics:mailing_stat_list")
+    extra_context = {
+        "title": "Удаление попытки рассылки",
+        "description": "После удаления попытки рассылки восстановить невозможно",
+    }
 
 
-# Интерфейс для просмотра клиентов рассылки
-class ClientListView(ListView):
+# CRUD Клиентов
+class ClientListView(LoginRequiredMixin, ControlUserObject, ListView):
+    """
+    Представление всех клиентов
+    """
+
     model = Client
-    extra_context = {'title': 'Просмотр клиентов рассылки',
-                     'description': 'В таблице отображаются все клиенты рассылки'}
-
-    # def get_context_data(self, *, object_list=None, **kwargs):
-    #     context_data = super().get_context_data(object_list=None, **kwargs)
-    #
-    #     print(self.object_list[0].mailing)
-    #     return context_data
+    extra_context = {
+        "title": "Просмотр клиентов рассылки",
+        "description": "В таблице отображаются все клиенты рассылки",
+    }
 
 
-class ClientCreateView(CreateView):
+class ClientCreateView(LoginRequiredMixin, AddArgumentsInForms, CreateView):
+    """
+    Представление создания клиента
+    """
+
     model = Client
     form_class = ClientForm
-    success_url = reverse_lazy('data_statistics:client_list')
-    extra_context = {'title': 'Создание клиента рассылки',
-                     'description': 'Создайте клиента, которому отправляется рассылка'}
+    success_url = reverse_lazy("data_statistics:client_list")
+    extra_context = {
+        "title": "Создание клиента рассылки",
+        "description": "Создайте клиента, которому отправляется рассылка",
+    }
 
     def form_valid(self, form):
-        client = form.save()
-        mailing = Mailing.objects.get(pk=self.request.POST.get('mailing'))
-        client.mailing.add(mailing)
+        """
+        Функция проверки валидности и сохранения формы в базу данных
+        :return: HttpResponseRedirect
+        """
+        object_ = form.save()
+
+        # Присваивание клиенту рассылки
+        mailing = Mailing.objects.get(pk=self.request.POST.get("mailing"))
+        object_.mailing.add(mailing)
+
+        # Присваивание клиенту пользователя
+        object_.owner = self.request.user
+        object_.save()
         return super().form_valid(form)
 
 
-class ClientDetailView(DetailView):
+class ClientDetailView(LoginRequiredMixin, ControlUserObject, DetailView):
+    """
+    Представление детального просмотра клиента
+    """
+
     model = Client
-    extra_context = {'title': 'Просмотр клиента рассылки',
-                     'description': 'Изучите параметры клиента, которому отправляется рассылка'}
+    extra_context = {
+        "title": "Просмотр клиента рассылки",
+        "description": "Изучите параметры клиента, которому отправляется рассылка",
+    }
 
     def get_context_data(self, **kwargs):
+        """
+        Функция добавления в context_data всех рассылок, от которых клиент получает сообщения
+        :return: context_data
+        """
         context_data = super().get_context_data(**kwargs)
-        context_data['mailings'] = ", ".join(mailing.name for mailing in self.object.mailing.all())
+        context_data["mailings"] = ", ".join(mailing.name for mailing in self.object.mailing.all())
         return context_data
 
 
-class ClientUpdateView(UpdateView):
+class ClientUpdateView(LoginRequiredMixin, ControlUserObject, AddArgumentsInForms, UpdateView):
+    """
+    Представление редактирования клиента
+    """
+
     model = Client
     form_class = ClientForm
-    extra_context = {'title': 'Редактирование клиента рассылки',
-                     'description': 'Редактируйте параметры клиента, которому отправляется рассылка'}
+    extra_context = {
+        "title": "Редактирование клиента рассылки",
+        "description": "Редактируйте параметры клиента, которому отправляется рассылка",
+    }
 
     def get_success_url(self):
-        return reverse('data_statistics:client_detail', args=[self.object.pk])
+        """
+        Возвращает url представления детального просмотра рассылки.
+        :return: Url
+        """
+        return reverse("data_statistics:client_detail", args=[self.object.pk])
 
 
-class ClientDeleteView(DeleteView):
+class ClientDeleteView(LoginRequiredMixin, ControlUserObject, DeleteView):
+    """
+    Представление удаления клиента
+    """
+
     model = Client
-    success_url = reverse_lazy('data_statistics:client_list')
-    extra_context = {'title': 'Удаление клиента рассылки',
-                     'description': 'После удаления клиента восстановить невозможно'}
+    success_url = reverse_lazy("data_statistics:client_list")
+    extra_context = {
+        "title": "Удаление клиента рассылки",
+        "description": "После удаления клиента восстановить невозможно",
+    }
