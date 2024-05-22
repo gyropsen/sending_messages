@@ -29,7 +29,6 @@ class MessageForm(StyleFormMixin, ForbiddenWordsMixin, forms.ModelForm):
     """
     Форма сообщения
     """
-    mailing = forms.ModelChoiceField(queryset=Mailing.objects.none())
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)

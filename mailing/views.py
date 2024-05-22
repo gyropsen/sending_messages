@@ -2,8 +2,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms import inlineformset_factory, modelformset_factory
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
-from django.core.exceptions import EmptyResultSet, PermissionDenied
 
+from mailing.utils import ControlUserObject
 from data_statistics.forms import ClientForm
 from data_statistics.models import Client
 from mailing.forms import MailingForm, MessageForm
@@ -11,7 +11,7 @@ from mailing.models import Mailing, Message
 
 
 # CRUD сообщений
-class MessageListView(LoginRequiredMixin, ListView):
+class MessageListView(LoginRequiredMixin, ControlUserObject, ListView):
     """
     Представление - это вызываемый объект, который принимает запрос и возвращает ответ
     Представление всех сообщений
@@ -20,11 +20,8 @@ class MessageListView(LoginRequiredMixin, ListView):
     model = Message
     extra_context = {"title": "Просмотр сообщений", "description": "В таблице отображаются все сообщения"}
 
-    def get_queryset(self):
-        return Message.objects.filter(owner=self.request.user)
 
-
-class MessageCreateView(LoginRequiredMixin, CreateView):
+class MessageCreateView(LoginRequiredMixin, ControlUserObject, CreateView):
     """
     Представление создания сообщения
     """
@@ -38,18 +35,24 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("mailing:message_list")
 
     def get_form_kwargs(self):
+        """
+        Функция добавления в форму аргумент содержащий текущего пользователя
+        """
         kwargs = super().get_form_kwargs()
         kwargs.update({'user': self.request.user})
         return kwargs
 
     def form_valid(self, form):
+        """
+        Функция проверки валидности и сохранения формы в базу данных
+        """
         object_ = form.save()
         object_.owner = self.request.user
         object_.save()
         return super().form_valid(form)
 
 
-class MessageDetailView(LoginRequiredMixin, DetailView):
+class MessageDetailView(LoginRequiredMixin, ControlUserObject, DetailView):
     """
     Представление детального просмотра сообщения
     """
@@ -60,17 +63,8 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
         "description": "Изучите параметры сообщения, которое будет отправляется вашим клиентам",
     }
 
-    def get_object(self, queryset=None):
-        message = Message.objects.filter(pk=self.kwargs.get("pk"))
-        if message:
-            if message.filter(owner=self.request.user):
-                return message[0]
-            else:
-                raise PermissionDenied("Доступ запрещен")
-        raise EmptyResultSet("Запрос не возвращает никаких результатов")
 
-
-class MessageUpdateView(LoginRequiredMixin, UpdateView):
+class MessageUpdateView(LoginRequiredMixin, ControlUserObject, UpdateView):
     """
     Представление редактирования сообщения
     """
@@ -82,14 +76,13 @@ class MessageUpdateView(LoginRequiredMixin, UpdateView):
         "description": "Редактируйте сообщение, которое будет использоваться в рассылке",
     }
 
-    def get_object(self, queryset=None):
-        message = Message.objects.filter(pk=self.kwargs.get("pk"))
-        if message:
-            if message.filter(owner=self.request.user):
-                return message[0]
-            else:
-                raise PermissionDenied("Доступ запрещен")
-        raise EmptyResultSet("Запрос не возвращает никаких результатов")
+    def get_form_kwargs(self):
+        """
+        Функция добавления в форму аргумент содержащий текущего пользователя
+        """
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
 
     def get_success_url(self):
         """
@@ -99,7 +92,7 @@ class MessageUpdateView(LoginRequiredMixin, UpdateView):
         return reverse("mailing:message_detail", args=[self.object.pk])
 
 
-class MessageDeleteView(LoginRequiredMixin, DeleteView):
+class MessageDeleteView(LoginRequiredMixin, ControlUserObject, DeleteView):
     """
     Представление удаления сообщения
     """
@@ -108,27 +101,15 @@ class MessageDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("mailing:message_list")
     extra_context = {"title": "Удаление сообщения", "description": "После удаления сообщение восстановить невозможно"}
 
-    def get_object(self, queryset=None):
-        message = Message.objects.filter(pk=self.kwargs.get("pk"))
-        if message:
-            if message.filter(owner=self.request.user):
-                return message[0]
-            else:
-                raise PermissionDenied("Доступ запрещен")
-        raise EmptyResultSet("Запрос не возвращает никаких результатов")
-
 
 # CRUD рассылок
-class MailingListView(LoginRequiredMixin, ListView):
+class MailingListView(LoginRequiredMixin, ControlUserObject, ListView):
     """
     Представление просмотра всех рассылок
     """
 
     model = Mailing
     extra_context = {"title": "Просмотр рассылок", "description": "В таблице отображаются все рассылки"}
-
-    def get_queryset(self):
-        return Mailing.objects.filter(owner=self.request.user)
 
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
@@ -147,7 +128,6 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         """
         Вместе с созданием рассылки, можно создать и сообщения путем создания формсета сообщений.
-        :param kwargs:
         :return: Context_data
         """
         context_data = super().get_context_data(**kwargs)
@@ -164,8 +144,7 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         """
-        Проверка валидности формы и формсета
-        :param form: форма
+        Функция проверки валидности и сохранения формы и формсетов в базу данных
         :return: HttpResponseRedirect
         """
         context_data = self.get_context_data()
@@ -181,7 +160,7 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MailingDetailView(LoginRequiredMixin, DetailView):
+class MailingDetailView(LoginRequiredMixin, ControlUserObject, DetailView):
     """
     Представление детального просмотра рассылки
     """
@@ -192,19 +171,9 @@ class MailingDetailView(LoginRequiredMixin, DetailView):
         "description": "Изучите параметры рассылки, которая будет отправлена вашим клиентам",
     }
 
-    def get_object(self, queryset=None):
-        mailing = Mailing.objects.filter(pk=self.kwargs.get("pk"))
-        if mailing:
-            if mailing.filter(owner=self.request.user):
-                return mailing[0]
-            else:
-                raise PermissionDenied("Доступ запрещен")
-        raise EmptyResultSet("Запрос не возвращает никаких результатов")
-
     def get_context_data(self, **kwargs):
         """
         Вместе с детальным просмотром рассылки, можно просмотреть сообщения и клиентов рассылки
-        :param kwargs:
         :return: Context_data
         """
         context_data = super().get_context_data(**kwargs)
@@ -218,7 +187,7 @@ class MailingDetailView(LoginRequiredMixin, DetailView):
         return context_data
 
 
-class MailingUpdateView(LoginRequiredMixin, UpdateView):
+class MailingUpdateView(LoginRequiredMixin, ControlUserObject, UpdateView):
     """
     Представление редактирования рассылки
     """
@@ -229,15 +198,6 @@ class MailingUpdateView(LoginRequiredMixin, UpdateView):
         "title": "Редактирование рассылки",
         "description": "Редактируйте рассылку, которая будет отправлена вашим клиентам",
     }
-
-    def get_object(self, queryset=None):
-        mailing = Mailing.objects.filter(pk=self.kwargs.get("pk"))
-        if mailing:
-            if mailing.filter(owner=self.request.user):
-                return mailing[0]
-            else:
-                raise PermissionDenied("Доступ запрещен")
-        raise EmptyResultSet("Запрос не возвращает никаких результатов")
 
     def get_context_data(self, **kwargs):
         """
@@ -273,8 +233,7 @@ class MailingUpdateView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         """
-        Проверка валидности формы и формсетов
-        :param form: форма
+        Функция проверки валидности и сохранения формы и формсетов в базу данных
         :return: HttpResponseRedirect
         """
         context_data = self.get_context_data()
@@ -291,7 +250,7 @@ class MailingUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class MailingDeleteView(LoginRequiredMixin, DeleteView):
+class MailingDeleteView(LoginRequiredMixin, ControlUserObject, DeleteView):
     """
     Представление удаления рассылки
     """
@@ -299,12 +258,3 @@ class MailingDeleteView(LoginRequiredMixin, DeleteView):
     model = Mailing
     success_url = reverse_lazy("mailing:mailing_list")
     extra_context = {"title": "Удаление рассылки", "description": "После удаления рассылку восстановить невозможно"}
-
-    def get_object(self, queryset=None):
-        mailing = Mailing.objects.filter(pk=self.kwargs.get("pk"))
-        if mailing:
-            if mailing.filter(owner=self.request.user):
-                return mailing[0]
-            else:
-                raise PermissionDenied("Доступ запрещен")
-        raise EmptyResultSet("Запрос не возвращает никаких результатов")
