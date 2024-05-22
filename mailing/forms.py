@@ -1,39 +1,13 @@
 from django import forms
 
 from mailing.models import Mailing, Message
+from mailing.utils import ConfigForms, GetArgumentsInForms
 
 
-class ForbiddenWordsMixin:
-    """
-    Миксин для указания запрещённых слов
-    """
-
-    forbidden_words = ["казино", "криптовалюта", "крипта", "биржа", "дешево", "бесплатно", "обман", "полиция", "радар"]
-
-
-class StyleFormMixin:
-    """
-    Миксин для контроля стилей формы
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field_name, field in self.fields.items():
-            if field_name == "is_active":
-                field.widget.attrs["class"] = "form-check-input"
-            else:
-                field.widget.attrs["class"] = "form-control"
-
-
-class MessageForm(ForbiddenWordsMixin, StyleFormMixin, forms.ModelForm):
+class MessageForm(ConfigForms, GetArgumentsInForms, forms.ModelForm):
     """
     Форма сообщения
     """
-
-    def __init__(self, *args, user=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        if user is not None:
-            self.fields['mailing'].queryset = Mailing.objects.filter(owner=user)
 
     class Meta:
         model = Message
@@ -60,7 +34,7 @@ class MessageForm(ForbiddenWordsMixin, StyleFormMixin, forms.ModelForm):
         return cleaned_data
 
 
-class MailingForm(ForbiddenWordsMixin, StyleFormMixin, forms.ModelForm):
+class MailingForm(ConfigForms, forms.ModelForm):
     """
     Форма рассылки
     """

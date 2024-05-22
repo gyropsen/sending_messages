@@ -5,7 +5,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from data_statistics.forms import ClientForm
 from data_statistics.models import Client, MailingStat
 from mailing.models import Mailing
-from mailing.utils import ControlUserObject
+from mailing.utils import AddArgumentsInForms, ControlUserObject
 
 
 # CRUD Статистики рассылки
@@ -57,7 +57,7 @@ class ClientListView(LoginRequiredMixin, ControlUserObject, ListView):
     }
 
 
-class ClientCreateView(LoginRequiredMixin, CreateView):
+class ClientCreateView(LoginRequiredMixin, AddArgumentsInForms, CreateView):
     """
     Представление создания клиента
     """
@@ -69,14 +69,6 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
         "title": "Создание клиента рассылки",
         "description": "Создайте клиента, которому отправляется рассылка",
     }
-
-    def get_form_kwargs(self):
-        """
-        Функция добавления в форму аргумент содержащий текущего пользователя
-        """
-        kwargs = super().get_form_kwargs()
-        kwargs.update({'user': self.request.user})
-        return kwargs
 
     def form_valid(self, form):
         """
@@ -116,7 +108,7 @@ class ClientDetailView(LoginRequiredMixin, ControlUserObject, DetailView):
         return context_data
 
 
-class ClientUpdateView(LoginRequiredMixin, ControlUserObject, UpdateView):
+class ClientUpdateView(LoginRequiredMixin, ControlUserObject, AddArgumentsInForms, UpdateView):
     """
     Представление редактирования клиента
     """
@@ -127,14 +119,6 @@ class ClientUpdateView(LoginRequiredMixin, ControlUserObject, UpdateView):
         "title": "Редактирование клиента рассылки",
         "description": "Редактируйте параметры клиента, которому отправляется рассылка",
     }
-
-    def get_form_kwargs(self):
-        """
-        Функция добавления в форму аргумент содержащий текущего пользователя
-        """
-        kwargs = super().get_form_kwargs()
-        kwargs.update({'user': self.request.user})
-        return kwargs
 
     def get_success_url(self):
         """

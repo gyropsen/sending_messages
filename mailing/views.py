@@ -3,11 +3,11 @@ from django.forms import inlineformset_factory, modelformset_factory
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from mailing.utils import ControlUserObject
 from data_statistics.forms import ClientForm
 from data_statistics.models import Client
 from mailing.forms import MailingForm, MessageForm
 from mailing.models import Mailing, Message
+from mailing.utils import AddArgumentsInForms, ControlUserObject
 
 
 # CRUD сообщений
@@ -21,7 +21,7 @@ class MessageListView(LoginRequiredMixin, ControlUserObject, ListView):
     extra_context = {"title": "Просмотр сообщений", "description": "В таблице отображаются все сообщения"}
 
 
-class MessageCreateView(LoginRequiredMixin, CreateView):
+class MessageCreateView(LoginRequiredMixin, AddArgumentsInForms, CreateView):
     """
     Представление создания сообщения
     """
@@ -33,14 +33,6 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
         "description": "Создайте сообщение, которое будет использоваться в рассылке",
     }
     success_url = reverse_lazy("mailing:message_list")
-
-    def get_form_kwargs(self):
-        """
-        Функция добавления в форму аргумент содержащий текущего пользователя
-        """
-        kwargs = super().get_form_kwargs()
-        kwargs.update({'user': self.request.user})
-        return kwargs
 
     def form_valid(self, form):
         """
@@ -64,7 +56,7 @@ class MessageDetailView(LoginRequiredMixin, ControlUserObject, DetailView):
     }
 
 
-class MessageUpdateView(LoginRequiredMixin, ControlUserObject, UpdateView):
+class MessageUpdateView(LoginRequiredMixin, ControlUserObject, AddArgumentsInForms, UpdateView):
     """
     Представление редактирования сообщения
     """
@@ -75,14 +67,6 @@ class MessageUpdateView(LoginRequiredMixin, ControlUserObject, UpdateView):
         "title": "Редактирование сообщения",
         "description": "Редактируйте сообщение, которое будет использоваться в рассылке",
     }
-
-    def get_form_kwargs(self):
-        """
-        Функция добавления в форму аргумент содержащий текущего пользователя
-        """
-        kwargs = super().get_form_kwargs()
-        kwargs.update({'user': self.request.user})
-        return kwargs
 
     def get_success_url(self):
         """
@@ -218,8 +202,9 @@ class MailingUpdateView(LoginRequiredMixin, ControlUserObject, UpdateView):
             client_formset = ClientFormset(self.request.POST)
         else:
             message_formset = MessageFormset(instance=self.object, form_kwargs={"user": self.request.user})
-            client_formset = ClientFormset(queryset=Client.objects.filter(owner=self.request.user),
-                                           form_kwargs={"user": self.request.user})
+            client_formset = ClientFormset(
+                queryset=Client.objects.filter(owner=self.request.user), form_kwargs={"user": self.request.user}
+            )
 
         context_data["message_formset"] = message_formset
         context_data["client_formset"] = client_formset

@@ -1,23 +1,12 @@
 from django import forms
 
-from data_statistics.models import Client
-from mailing.utils import ConfigForms, GetArgumentsInForms
+from mailing.utils import ConfigForms
 
 
-class ClientForm(ConfigForms, GetArgumentsInForms, forms.ModelForm):
-    class Meta:
-        model = Client
-        exclude = ("owner",)
-
-    def clean_comment(self):
-        """
-        Функция проверки на запрещенные слова
-        """
-        cleaned_data = self.cleaned_data["comment"]
-        for word in cleaned_data.lower().split(" "):
-            if word in ClientForm.forbidden_words:
-                raise forms.ValidationError(f"Содержит запрещенное слово: {word}.")
-        return cleaned_data
+class CleanUser(ConfigForms):
+    """
+    Класс проверки форм пользователя на запрещённые слова
+    """
 
     def clean_name(self):
         """
@@ -25,7 +14,7 @@ class ClientForm(ConfigForms, GetArgumentsInForms, forms.ModelForm):
         """
         cleaned_data = self.cleaned_data["name"]
         for word in cleaned_data.lower().split(" "):
-            if word in ClientForm.forbidden_words:
+            if word in CleanUser.forbidden_words:
                 raise forms.ValidationError(f"Содержит запрещенное слово: {word}.")
         return cleaned_data
 
@@ -35,6 +24,6 @@ class ClientForm(ConfigForms, GetArgumentsInForms, forms.ModelForm):
         """
         cleaned_data = self.cleaned_data["surname"]
         for word in cleaned_data.lower().split(" "):
-            if word in ClientForm.forbidden_words:
+            if word in CleanUser.forbidden_words:
                 raise forms.ValidationError(f"Содержит запрещенное слово: {word}.")
         return cleaned_data
