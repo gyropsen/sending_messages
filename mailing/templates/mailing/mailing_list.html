@@ -1,10 +1,11 @@
 {% extends 'mailing/base.html' %}
 {% block content %}
+{% if user.groups.all.first.name != 'moderator' %}
 <h1>
     <a href="{% url 'mailing:mailing_create' %}" type="button"
        class="btn btn-lg btn-block btn-primary">Добавить рассылку</a>
 </h1>
-
+{% endif %}
 <div class="table-responsive">
     <table class="table text-center">
         <thead>
@@ -13,7 +14,6 @@
             <th style="width: 34%;">Периодичность</th>
             <th style="width: 22%;">Статус</th>
             <th style="width: 22%;">Активна</th>
-            <th style="width: 22%;">Владелец</th>
             <th style="width: 22%;">Информация</th>
 
 
@@ -43,8 +43,17 @@
                 Пауза
                 {% endif %}
             </td>
-            <td scope="row">{{object.is_active}}</td>
-            <td scope="row">{{object.owner}}</td>
+            <td scope="row">
+
+                {% if object.is_active %}
+                <a href="{% url 'users:mailing_set_active' object.pk %}" type="button"
+                   class="btn btn-lg btn-block btn-primary">Включена</a>
+
+                {% else %}
+                <a href="{% url 'users:mailing_set_active' object.pk %}" type="button"
+                   class="btn btn-lg btn-block btn-warning">Выключена</a>
+                {% endif %}
+            </td>
             <td scope="row">
                 <a href="{% url 'mailing:mailing_detail' object.pk %}" type="button"
                    class="btn btn-lg btn-block btn-outline-info">Просмотреть</a>

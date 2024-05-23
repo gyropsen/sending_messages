@@ -1,13 +1,15 @@
 import secrets
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404, render
-from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.views.generic import CreateView, ListView, UpdateView
 
 from config import settings
+from mailing.models import Mailing
 from users.forms import UserAuthenticationForm, UserRegistrationForm, UserUserChangeForm
 from users.models import User
 
@@ -129,3 +131,50 @@ def success_email_confirm(request, token: str):
         "message": "Добро пожаловать на сайт!",
     }
     return render(request, "users/email_confirm.html", context)
+
+
+class UserListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+    model = User
+    permission_required = "users.view_user"
+    extra_context = {"title": "Просмотр пользователей", "description": "В таблице отображаются все пользователи"}
+
+    def get_queryset(self):
+        """
+        Функция возвращает объекты User
+        """
+        queryset = super().get_queryset()
+        return queryset.all().order_by("pk").reverse()
+
+
+@permission_required(["users.view_user", "users.change_active"], login_url=reverse_lazy("users:user_list"))
+@login_required
+def user_set_active(request, pk):
+    """
+    Функция блокировки и разблокировки пользователей сайта
+    :param pk:
+    """
+    user = get_object_or_404(User, pk=pk)
+    if not user.is_superuser:
+        if user.is_active:
+            user.is_active = False
+        else:
+            user.is_active = True
+        user.save()
+    return redirect(reverse("users:user_list"))
+
+
+@permission_required(["users.view_user", "mailing.change_active"], login_url=reverse_lazy("users:user_list"))
+@login_required
+def mailing_set_active(request, pk):
+    """
+    Функция блокировки и разблокировки пользователей сайта
+    :param pk:
+    """
+    mailing = get_object_or_404(Mailing, pk=pk)
+    if not mailing.is_superuser:
+        if mailing.is_active:
+            mailing.is_active = False
+        else:
+            mailing.is_active = True
+        mailing.save()
+    return redirect(reverse("users:user_list"))

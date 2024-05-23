@@ -1,11 +1,12 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserChangeForm, UserCreationForm
 
+from mailing.forms import ConfigForms
 from users.models import User
 from users.utils import CleanUser
 
 
-class UserAuthenticationForm(AuthenticationForm):
+class UserAuthenticationForm(ConfigForms, AuthenticationForm):
     """
     Класс формы аутентификации пользователей
     """
