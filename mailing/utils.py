@@ -13,7 +13,11 @@ class ControlUserObject:
         Функция возвращает объекты в зависимости от пользователя в запросе
         """
         queryset = super().get_queryset()
-        return queryset.filter(owner=self.request.user).order_by("pk").reverse()
+        user = self.request.user
+
+        if user.has_perm("mailing.view_mailing") and self.model is Mailing:
+            return queryset.all().order_by("pk").reverse()
+        return queryset.filter(owner=user).order_by("pk").reverse()
 
     def get_object(self):
         """

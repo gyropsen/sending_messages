@@ -66,7 +66,7 @@ def check_jobs():
     Проверка каждой рассылки на наличие статистики,
     если статистика есть - пропуск, нет - добавление периодической задачи
     """
-    for mailing in Mailing.objects.all():
+    for mailing in Mailing.objects.filter(is_active=True):
         check_status(mailing)
         print(mailing.name, MailingStat.objects.filter(mailing=mailing).exists())
         if not MailingStat.objects.filter(mailing=mailing).exists():

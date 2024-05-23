@@ -39,6 +39,9 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = "Рассылка"
         verbose_name_plural = "Рассылки"
+        permissions = [
+            ("change_active", "Can change is_active"),
+        ]
 
     # TO STRING METHOD
     def __str__(self):
