@@ -2,7 +2,9 @@ import secrets
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, LogoutView
+from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -51,9 +53,13 @@ class UserRegisterView(CreateView):
         """
         new_user = form.save()
         new_user.is_active = False
+
         token = secrets.token_hex(16)
         new_user.token = token
         new_user.save()
+
+        group = Group.objects.get(name="users")
+        group.user_set.add(new_user)
 
         host = self.request.get_host()
         url = f"http://{host}/users/success_email_confirm/{token}/"
@@ -163,7 +169,6 @@ def user_set_active(request, pk):
     return redirect(reverse("users:user_list"))
 
 
-@permission_required(["users.view_user", "mailing.change_active"], login_url=reverse_lazy("users:user_list"))
 @login_required
 def mailing_set_active(request, pk):
     """
@@ -171,10 +176,12 @@ def mailing_set_active(request, pk):
     :param pk:
     """
     mailing = get_object_or_404(Mailing, pk=pk)
-    if not mailing.is_superuser:
+    if mailing.owner == request.user or request.user.is_staff:
         if mailing.is_active:
             mailing.is_active = False
         else:
             mailing.is_active = True
         mailing.save()
-    return redirect(reverse("users:user_list"))
+    else:
+        raise PermissionDenied("Доступ запрещен")
+    return redirect(reverse("mailing:mailing_list"))

@@ -41,6 +41,7 @@ class Mailing(models.Model):
         verbose_name_plural = "Рассылки"
         permissions = [
             ("change_active", "Can change is_active"),
+            ("detail_mailing", "Can Detail view mailing"),
         ]
 
     # TO STRING METHOD

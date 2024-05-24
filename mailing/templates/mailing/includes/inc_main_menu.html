@@ -1,39 +1,58 @@
 <div class="d-flex flex-column flex-md-row align-items-center pb-3 mb-4 border-bottom">
+
+    {% if user.is_authenticated %}
+
     <a href="{% url 'mailing:mailing_list' %}"
        class="d-flex align-items-center link-body-emphasis text-decoration-none">
         <span class="fs-4">Личный кабинет</span>
     </a>
+
+    {% else %}
+
+    <a href="{% url 'blog:start_page' %}"
+       class="d-flex align-items-center link-body-emphasis text-decoration-none">
+        <span class="fs-4">SendMes</span>
+    </a>
+
+    {% endif %}
+
     <nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">
-        {% if user.groups.all.first.name == 'moderator' %}
+        <a class="me-3 py-2 link-body-emphasis text-decoration-none"
+           href="{% url 'blog:article_list' %}">Блог</a>
+
+        {% if user.is_authenticated %}
+
         <a class="me-3 py-2 link-body-emphasis text-decoration-none"
            href="{% url 'mailing:mailing_list' %}">Рассылки</a>
+
+        {% if not user.is_staff or user.is_superuser %}
+
         <a class="me-3 py-2 link-body-emphasis text-decoration-none"
-           href="{% url 'users:user_list' %}">Пользователи</a>
-        <a class="me-3 py-2 link-body-emphasis text-decoration-none"
-           href="{% url 'users:profile' %}">Профиль</a>
-        <form method="post" class="me-3 py-1" action="{% url 'users:logout' %}">
-            {% csrf_token %}
-            <button class="btn btn-outline-primary" type="submit">Выход</button>
-        </form>
-        {% else %}
-        <a class="me-3 py-2 link-body-emphasis text-decoration-none" href="{% url 'data_statistics:client_list' %}">Клиенты</a>
+           href="{% url 'data_statistics:client_list' %}">Клиенты</a>
         <a class="me-3 py-2 link-body-emphasis text-decoration-none"
            href="{% url 'mailing:message_list' %}">Сообщения</a>
         <a class="me-3 py-2 link-body-emphasis text-decoration-none"
            href="{% url 'data_statistics:mailing_stat_list' %}">Статистика</a>
+
+        {% else%}
+
         <a class="me-3 py-2 link-body-emphasis text-decoration-none"
-           href="{% url 'mailing:mailing_list' %}">Рассылки</a>
-        {% if user.is_authenticated %}
+           href="{% url 'users:user_list' %}">Пользователи</a>
+
+        {% endif %}
+
         <a class="me-3 py-2 link-body-emphasis text-decoration-none"
            href="{% url 'users:profile' %}">Профиль</a>
         <form method="post" class="me-3 py-1" action="{% url 'users:logout' %}">
             {% csrf_token %}
             <button class="btn btn-outline-primary" type="submit">Выход</button>
         </form>
+
         {% else %}
+
         <a class="me-3 py-2 btn btn-outline-primary" href="{% url 'users:login' %}">Вход</a>
         <a class="me-3 py-2 btn btn-outline-primary" href="{% url 'users:register' %}">Регистрация</a>
-        {% endif %}
+
         {% endif %}
     </nav>
 </div>

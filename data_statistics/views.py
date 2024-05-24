@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
@@ -9,35 +9,38 @@ from mailing.utils import AddArgumentsInForms, ControlUserObject
 
 
 # CRUD Статистики рассылки
-class MailingStatListView(LoginRequiredMixin, ControlUserObject, ListView):
+class MailingStatListView(LoginRequiredMixin, PermissionRequiredMixin, ControlUserObject, ListView):
     """
     Представление - это вызываемый объект, который принимает запрос и возвращает ответ
     Представление всех статистик рассылок
     """
 
     model = MailingStat
+    permission_required = "data_statistics.view_mailingstat"
     extra_context = {
         "title": "Просмотр попыток рассылки",
         "description": "В таблице отображаются все попытки рассылки",
     }
 
 
-class MailingStatDetailView(LoginRequiredMixin, ControlUserObject, DetailView):
+class MailingStatDetailView(LoginRequiredMixin, PermissionRequiredMixin, ControlUserObject, DetailView):
     """
     Представление детального просмотра статистики рассылки
     """
 
     model = MailingStat
+    permission_required = "data_statistics.view_mailingstat"
     extra_context = {"title": "Просмотр попыток рассылки", "description": "Подробный отчёт по попытке рассылки"}
 
 
-class MailingStatDeleteView(LoginRequiredMixin, ControlUserObject, DeleteView):
+class MailingStatDeleteView(LoginRequiredMixin, PermissionRequiredMixin, ControlUserObject, DeleteView):
     """
     Представление удаления статистики рассылки
     """
 
     model = MailingStat
     success_url = reverse_lazy("data_statistics:mailing_stat_list")
+    permission_required = "data_statistics.delete_mailingstat"
     extra_context = {
         "title": "Удаление попытки рассылки",
         "description": "После удаления попытки рассылки восстановить невозможно",
@@ -45,25 +48,27 @@ class MailingStatDeleteView(LoginRequiredMixin, ControlUserObject, DeleteView):
 
 
 # CRUD Клиентов
-class ClientListView(LoginRequiredMixin, ControlUserObject, ListView):
+class ClientListView(LoginRequiredMixin, PermissionRequiredMixin, ControlUserObject, ListView):
     """
     Представление всех клиентов
     """
 
     model = Client
+    permission_required = "data_statistics.view_client"
     extra_context = {
         "title": "Просмотр клиентов рассылки",
         "description": "В таблице отображаются все клиенты рассылки",
     }
 
 
-class ClientCreateView(LoginRequiredMixin, AddArgumentsInForms, CreateView):
+class ClientCreateView(LoginRequiredMixin, PermissionRequiredMixin, AddArgumentsInForms, CreateView):
     """
     Представление создания клиента
     """
 
     model = Client
     form_class = ClientForm
+    permission_required = "data_statistics.add_client"
     success_url = reverse_lazy("data_statistics:client_list")
     extra_context = {
         "title": "Создание клиента рассылки",
@@ -87,12 +92,13 @@ class ClientCreateView(LoginRequiredMixin, AddArgumentsInForms, CreateView):
         return super().form_valid(form)
 
 
-class ClientDetailView(LoginRequiredMixin, ControlUserObject, DetailView):
+class ClientDetailView(LoginRequiredMixin, PermissionRequiredMixin, ControlUserObject, DetailView):
     """
     Представление детального просмотра клиента
     """
 
     model = Client
+    permission_required = "data_statistics.view_client"
     extra_context = {
         "title": "Просмотр клиента рассылки",
         "description": "Изучите параметры клиента, которому отправляется рассылка",
@@ -108,13 +114,16 @@ class ClientDetailView(LoginRequiredMixin, ControlUserObject, DetailView):
         return context_data
 
 
-class ClientUpdateView(LoginRequiredMixin, ControlUserObject, AddArgumentsInForms, UpdateView):
+class ClientUpdateView(
+    LoginRequiredMixin, PermissionRequiredMixin, ControlUserObject, AddArgumentsInForms, UpdateView
+):
     """
     Представление редактирования клиента
     """
 
     model = Client
     form_class = ClientForm
+    permission_required = "data_statistics.change_client"
     extra_context = {
         "title": "Редактирование клиента рассылки",
         "description": "Редактируйте параметры клиента, которому отправляется рассылка",
@@ -128,13 +137,14 @@ class ClientUpdateView(LoginRequiredMixin, ControlUserObject, AddArgumentsInForm
         return reverse("data_statistics:client_detail", args=[self.object.pk])
 
 
-class ClientDeleteView(LoginRequiredMixin, ControlUserObject, DeleteView):
+class ClientDeleteView(LoginRequiredMixin, PermissionRequiredMixin, ControlUserObject, DeleteView):
     """
     Представление удаления клиента
     """
 
     model = Client
     success_url = reverse_lazy("data_statistics:client_list")
+    permission_required = "data_statistics.delete_client"
     extra_context = {
         "title": "Удаление клиента рассылки",
         "description": "После удаления клиента восстановить невозможно",

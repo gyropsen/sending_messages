@@ -11,8 +11,11 @@
             <th style="width: 22%;">Номер</th>
             <th style="width: 22%;">Электронная почта</th>
             <th style="width: 22%;">Имя Фамилия</th>
-
             <th style="width: 22%;">Информация</th>
+            {% if user.is_superuser %}
+            <th style="width: 22%;">Владелец</th>
+            {% endif %}
+
 
         </tr>
         </thead>
@@ -26,6 +29,9 @@
                 <a href="{% url 'data_statistics:client_detail' object.pk %}" type="button"
                    class="btn btn-lg btn-block btn-outline-info">Просмотреть</a>
             </td>
+            {% if user.is_superuser %}
+            <td scope="row">{{object.owner}}</td>
+            {% endif %}
         </tr>
         </tbody>
         {% endfor %}
