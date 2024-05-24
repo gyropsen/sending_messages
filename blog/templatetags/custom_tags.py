@@ -7,4 +7,4 @@ register = template.Library()
 def media_tag(val):
     if val:
         return f"/media/{val}"
-    return '#'
+    return "#"

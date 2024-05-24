@@ -6,27 +6,36 @@
         <div class="col-6 col-md">
             <h5>О проекте</h5>
             <ul class="list-unstyled text-small">
-                <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">О разработчике</a></li>
-                <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Контакты</a></li>
+                <li class="mb-1"><a class="link-secondary text-decoration-none"
+                                    href="https://t.me/hozdymvirs">О разработчике</a></li>
+                <li class="mb-1"><a class="link-secondary text-decoration-none"
+                                    href="https://t.me/hozdymvirs">Контакты</a></li>
             </ul>
         </div>
         <div class="col-6 col-md">
             <h5>Инструменты</h5>
             <ul class="list-unstyled text-small">
                 <li class="mb-1"><a class="link-secondary text-decoration-none"
+                                    href="{% url 'mailing:mailing_list' %}">Рассылки</a></li>
+                {% if not user.is_staff or user.is_superuser %}
+
+                <li class="mb-1"><a class="link-secondary text-decoration-none"
                                     href="{% url 'data_statistics:client_list' %}">Клиенты</a></li>
                 <li class="mb-1"><a class="link-secondary text-decoration-none"
                                     href="{% url 'mailing:message_list' %}">Сообщения</a></li>
                 <li class="mb-1"><a class="link-secondary text-decoration-none"
-                                    href="{% url 'mailing:mailing_list' %}">Рассылки</a></li>
-                <li class="mb-1"><a class="link-secondary text-decoration-none"
                                     href="{% url 'data_statistics:mailing_stat_list' %}">Статистика</a></li>
+                {% else %}
+                <li class="mb-1"><a class="link-secondary text-decoration-none"
+                                    href="{% url 'users:user_list' %}">Пользователи</a></li>
+                {% endif %}
             </ul>
         </div>
         <div class="col-6 col-md">
             <h5>Техподдержка</h5>
             <ul class="list-unstyled text-small">
-                <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Телеграм</a></li>
+                <li class="mb-1"><a class="link-secondary text-decoration-none"
+                                    href="https://t.me/hozdymvirs">Телеграм</a></li>
             </ul>
         </div>
     </div>

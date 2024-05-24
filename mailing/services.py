@@ -4,12 +4,14 @@ from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.utils import timezone
 from django_apscheduler import util
 from django_apscheduler.jobstores import DjangoJobStore
 from django_apscheduler.models import DjangoJobExecution
 
+from config.settings import CACHE_ENABLED
 from data_statistics.models import MailingStat
 from mailing.models import Mailing, Message
 
@@ -40,6 +42,7 @@ def sending_mailing(mailing):
     messages = Message.objects.filter(mailing=mailing).filter(is_active=True)
     clients = mailing.client_set.all()
     if messages and clients:
+        mailing_stat = MailingStat.objects.filter(mailing=mailing)
         try:
             send_mail(
                 subject=messages[0].title,
@@ -48,15 +51,16 @@ def sending_mailing(mailing):
                 recipient_list=[client.email for client in clients],
             )
         except Exception as error:
-            mailing_stat = MailingStat.objects.create(
-                name=f"Error {mailing.name}", response=error, mailing=mailing, status_attempt=False
-            )
+            mailing_stat.name = f"Error {mailing.name}"
+            mailing_stat.response = error
+            mailing_stat.status_attempt = False
             mailing_stat.save()
-
         else:
-            mailing_stat = MailingStat.objects.create(
-                name=f"OK {mailing.name}", response="OK", mailing=mailing, status_attempt=True
-            )
+            mailing_stat.name = f"OK {mailing.name}"
+            mailing_stat.response = "OK"
+            mailing_stat.status_attempt = True
+            mailing_stat.save()
+        finally:
             mailing_stat.save()
     logger.info("sending_mailing done!")
 
@@ -68,12 +72,16 @@ def check_jobs():
     """
     for mailing in Mailing.objects.filter(is_active=True):
         check_status(mailing)
-        print(mailing.name, MailingStat.objects.filter(mailing=mailing).exists())
+        print(mailing, mailing.owner, MailingStat.objects.filter(mailing=mailing))
         if not MailingStat.objects.filter(mailing=mailing).exists():
             # Статистики нет, добавляем периодическую задачу, создаем статистику
             add_job_mailing(mailing)
             MailingStat.objects.create(
-                name=f"Pause {mailing.name}", response="Pause", mailing=mailing, status_attempt=False
+                name=f"Pause {mailing.name}",
+                response="Pause",
+                mailing=mailing,
+                status_attempt=False,
+                owner=mailing.owner,
             )
     logger.info("Check_jobs done!")
 
@@ -127,7 +135,7 @@ def start_scheduler():
 
     scheduler.add_job(
         check_jobs,
-        trigger=CronTrigger(minute="*/10"),
+        trigger=CronTrigger(second="*/10"),
         id="check_jobs",
         max_instances=1,
         replace_existing=True,
@@ -150,3 +158,25 @@ def start_scheduler():
         logger.info("Stopping scheduler...")
         scheduler.shutdown()
         logger.info("Scheduler shut down successfully!")
+
+
+def model_objects_all(model):
+    """
+    Функция предоставляет возможность получение от любой модели только всех данных
+    :return: Queryset
+    """
+    if not CACHE_ENABLED:
+        return model.objects.all()
+
+    key = f"{model.__name__}_list"
+    categories_in_cache = cache.get(key)
+
+    # Проверяем, есть ли в кэше данные по ключу categories_list
+    if categories_in_cache:
+        # Возвращаем данные в кэше
+        return categories_in_cache
+    else:
+        # Записываем данные в кэш, и возвращаем
+        categories = model.objects.all()
+        cache.set(key, categories)
+        return categories

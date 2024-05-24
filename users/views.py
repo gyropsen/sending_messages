@@ -2,12 +2,13 @@ import secrets
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, LogoutView
+from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView
-from django.core.exceptions import PermissionDenied
 
 from config import settings
 from mailing.models import Mailing
@@ -52,9 +53,13 @@ class UserRegisterView(CreateView):
         """
         new_user = form.save()
         new_user.is_active = False
+
         token = secrets.token_hex(16)
         new_user.token = token
         new_user.save()
+
+        group = Group.objects.get(name="users")
+        group.user_set.add(new_user)
 
         host = self.request.get_host()
         url = f"http://{host}/users/success_email_confirm/{token}/"

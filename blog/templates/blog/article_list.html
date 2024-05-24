@@ -2,7 +2,7 @@
 {% load custom_tags %}
 
 {% block content %}
-{% if user.groups.all.first.name == 'moderator' %}
+{% if user.is_staff %}
 <div class="mb-5">
     <a href="{% url 'blog:article_create' %}" type="button"
        class="btn btn-lg btn-block btn-primary">Добавить статью</a>

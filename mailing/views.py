@@ -59,7 +59,9 @@ class MessageDetailView(LoginRequiredMixin, PermissionRequiredMixin, ControlUser
     }
 
 
-class MessageUpdateView(LoginRequiredMixin, PermissionRequiredMixin, ControlUserObject, AddArgumentsInForms, UpdateView):
+class MessageUpdateView(
+    LoginRequiredMixin, PermissionRequiredMixin, ControlUserObject, AddArgumentsInForms, UpdateView
+):
     """
     Представление редактирования сообщения
     """

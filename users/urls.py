@@ -1,17 +1,8 @@
 from django.urls import path
 
 from users.apps import UsersConfig
-from users.views import (
-    Login,
-    Logout,
-    UserListView,
-    UserRegisterView,
-    UserUpdateView,
-    email_confirm,
-    mailing_set_active,
-    success_email_confirm,
-    user_set_active,
-)
+from users.views import (Login, Logout, UserListView, UserRegisterView, UserUpdateView, email_confirm,
+                         mailing_set_active, success_email_confirm, user_set_active)
 
 app_name = UsersConfig.name
 

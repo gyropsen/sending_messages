@@ -114,7 +114,9 @@ class ClientDetailView(LoginRequiredMixin, PermissionRequiredMixin, ControlUserO
         return context_data
 
 
-class ClientUpdateView(LoginRequiredMixin, PermissionRequiredMixin, ControlUserObject, AddArgumentsInForms, UpdateView):
+class ClientUpdateView(
+    LoginRequiredMixin, PermissionRequiredMixin, ControlUserObject, AddArgumentsInForms, UpdateView
+):
     """
     Представление редактирования клиента
     """
