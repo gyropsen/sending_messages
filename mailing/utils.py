@@ -15,7 +15,7 @@ class ControlUserObject:
         queryset = super().get_queryset()
         user = self.request.user
 
-        if user.has_perm("mailing.view_mailing") and self.model is Mailing:
+        if user.is_staff:
             return queryset.all().order_by("pk").reverse()
         return queryset.filter(owner=user).order_by("pk").reverse()
 

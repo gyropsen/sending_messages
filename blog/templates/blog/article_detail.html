@@ -1,0 +1,33 @@
+{% extends 'mailing/base.html' %}
+{% load custom_tags %}
+
+{% block content %}
+
+<div class="mb-5 text-center">
+    {% if user.groups.all.first.name == 'moderator' %}
+    <a class="w-10 btn btn-lg btn-danger" href="{% url 'blog:article_delete' object.pk %}">Удалить</a>
+    <a class="w-10 btn btn-lg btn-warning"
+       href="{% url 'blog:article_update' object.pk %}">Редактировать</a>
+    {% endif %}
+    <a class="w-10 btn btn-lg btn-info" href="{% url 'blog:article_list' %}">К списку</a>
+</div>
+<div class="text-center">
+    <div class="col">
+        <div class="card mb-4 rounded-3 shadow-sm">
+            <div class="card-header py-3">
+                <h4 class="my-0 fw-normal">{{object.title}}</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li>
+                        <img class="card-img-top" src="{% media_tag object.image %}" alt="Card image cap" height="500">
+                    </li>
+                    <li>{{object.content}}</li>
+                    <li>Дата создания: {{object.created_at}}</li>
+                    <li>Количество просмотров: {{object.views_count}}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

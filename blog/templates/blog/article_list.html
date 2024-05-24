@@ -1,0 +1,32 @@
+{% extends 'mailing/base.html' %}
+{% load custom_tags %}
+
+{% block content %}
+{% if user.groups.all.first.name == 'moderator' %}
+<div class="mb-5">
+    <a href="{% url 'blog:article_create' %}" type="button"
+       class="btn btn-lg btn-block btn-primary">Добавить статью</a>
+</div>
+{% endif %}
+<div class="row row-cols-1 row-cols-md-3 mb-2 text-center">
+    {% for object in object_list %}
+    <div class="col">
+        <div class="card mb-4 rounded-3 shadow-sm">
+            <div class="card-header py-3">
+                <h4 class="my-0 fw-normal">{{ object.title|title }}</h4>
+            </div>
+            <div class="card-body">
+                <img class="card-img-top" src="{% media_tag object.image %}" alt="Card image cap">
+                <p>{{ object.content|truncatechars:50 }}</p>
+                <p>Количество просмотров: {{ object.views_count }}</p>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'blog:article_detail' object.pk %}" type="button"
+                   class="btn btn-lg btn-block btn-info">Читать</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

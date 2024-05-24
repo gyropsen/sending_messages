@@ -7,6 +7,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView
+from django.core.exceptions import PermissionDenied
 
 from config import settings
 from mailing.models import Mailing
@@ -163,7 +164,6 @@ def user_set_active(request, pk):
     return redirect(reverse("users:user_list"))
 
 
-@permission_required(["users.view_user", "mailing.change_active"], login_url=reverse_lazy("users:user_list"))
 @login_required
 def mailing_set_active(request, pk):
     """
@@ -171,10 +171,12 @@ def mailing_set_active(request, pk):
     :param pk:
     """
     mailing = get_object_or_404(Mailing, pk=pk)
-    if not mailing.is_superuser:
+    if mailing.owner == request.user or request.user.is_staff:
         if mailing.is_active:
             mailing.is_active = False
         else:
             mailing.is_active = True
         mailing.save()
-    return redirect(reverse("users:user_list"))
+    else:
+        raise PermissionDenied("Доступ запрещен")
+    return redirect(reverse("mailing:mailing_list"))

@@ -22,14 +22,14 @@
             <td scope="row">{{object.email}}</td>
             <td scope="row">{{object.name|title}} {{object.surname|title}}</td>
             <td scope="row">
+                {% if object.is_active %}
                 <a href="{% url 'users:user_set_active' object.pk %}" type="button"
-                   class="btn btn-lg btn-block btn-outline-info">
-                    {% if object.is_active %}
-                    Заблокировать
-                    {% else %}
-                    Разблокировать
-                    {% endif %}
-                </a>
+                   class="btn btn-lg btn-block btn-info">Активный</a>
+                {% else %}
+                <a href="{% url 'users:user_set_active' object.pk %}" type="button"
+                   class="btn btn-lg btn-block btn-warning">Неактивный</a>
+                {% endif %}
+
             </td>
             <td scope="row">{{object.date_joined}}</td>
         </tr>
